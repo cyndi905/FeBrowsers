@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="15"
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp">
+
+        <EditText
+            android:focusable="false"
+            android:id="@+id/addressTxv"
+            android:layout_weight="11"
+            android:inputType="text"
+            android:maxLines="1"
+            android:layout_width="0dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/radius_tv"
+            android:drawableLeft="@drawable/ic_web"
+            android:gravity="center"
+            android:hint="请输入网址"
+            android:textSize="15sp"
+            android:paddingRight="10dp"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/white"
+            android:paddingLeft="10dp" />
+
+        <ImageButton
+            android:id="@+id/stop_or_refresh"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@drawable/ic_refresh" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:max="100" />
+
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/srl"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="200">
+
+        <WebView
+            android:id="@+id/web"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"></WebView>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/back_ico_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back" />
+
+        <ImageButton
+            android:id="@+id/forward_ico_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_forward" />
+
+        <ImageButton
+            android:id="@+id/home_ico_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_home" />
+
+        <ImageButton
+            android:id="@+id/view_ico_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_view" />
+
+        <ImageButton
+            android:id="@+id/more_ico_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_more_horiz" />
+    </LinearLayout>
+
+
+</LinearLayout>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddressInputActivity"
+    android:background="@color/colorPrimary">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="5dp">
+
+        <EditText
+            android:id="@+id/addressTxv1"
+            android:layout_weight="11"
+            android:inputType="textNoSuggestions"
+            android:maxLines="1"
+            android:layout_width="0dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/radius_tv"
+            android:drawableLeft="@drawable/ic_web"
+            android:hint="请输入网址或搜索内容"
+            android:paddingRight="10dp"
+            android:textSize="15sp"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/white"
+            android:paddingLeft="10dp"
+            android:imeOptions="actionDone" />
+
+        <ImageButton
+            android:id="@+id/confirm"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@drawable/ic_return_" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:shortcutId="homePage"
+        android:enabled="true"
+        android:icon="@drawable/ic_home"
+        android:shortcutShortLabel="@string/homePage"
+        android:shortcutLongLabel="@string/scHome_long"
+        android:shortcutDisabledMessage="@string/scHome_long">
+        <intent
+            android:action="openHomePage"
+            android:targetPackage="com.tiffanyx.febrowsers"
+            android:targetClass="com.tiffanyx.febrowsers.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="scanQRCode"
+        android:enabled="true"
+        android:icon="@drawable/ic_scan"
+        android:shortcutShortLabel="@string/scanQRCode"
+        android:shortcutLongLabel="@string/scanQRCode_long"
+        android:shortcutDisabledMessage="@string/scanQRCode_long">
+        <intent
+            android:action="scanQR"
+            android:targetPackage="com.tiffanyx.febrowsers"
+            android:targetClass="com.tiffanyx.febrowsers.MainActivity" />
+    </shortcut>
+</shortcuts>

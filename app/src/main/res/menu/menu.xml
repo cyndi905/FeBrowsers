@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/scanQRCode"
+        android:title="@string/scanQRCode" />
+    <item
+        android:id="@+id/share"
+        android:title="@string/share" />
+    <item
+        android:id="@+id/openByOther"
+        android:title="@string/openByOther" />
+    <item
+        android:id="@+id/requestPCVersion"
+        android:title="@string/requestPCVersion"
+        android:checkable="true" />
+    <item
+        android:id="@+id/about"
+        android:title="@string/about" />
+    <item
+        android:id="@+id/exit"
+        android:title="@string/exit" />
+
+</menu>

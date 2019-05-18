@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<resources>
+
+    <string name="app_name">Fe浏览器</string>
+
+    <string name="homePage">首页</string>
+
+    <string name="nextPage">前进</string>
+
+    <string name="backPage">返回</string>
+
+    <string name="exit">退出</string>
+
+    <string name="about">关于</string>
+
+    <string name="openByOther">用其他浏览器打开</string>
+
+    <string name="scanQRCode">扫码</string>
+    <string name="scanQRCode_long">扫描二维码打开网页</string>
+
+    <string name="search">搜索</string>
+    <string name="stop">停止</string>
+    <string name="share">分享</string>
+    <string name="requestPCVersion">请求电脑版网页</string>
+    <string name="scHome_long">打开首页</string>
+    <string name="download_pic">下载图片</string>
+
+</resources>
