@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ClipData;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
@@ -54,6 +53,7 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.tiffanyx.febrowsers.js.InJavaScriptLocalObj;
 import com.tiffanyx.febrowsers.receiver.DownloadCompleteReceiver;
 import com.tiffanyx.febrowsers.util.Constant;
 import com.tiffanyx.febrowsers.zxing.activity.CaptureActivity;
@@ -66,6 +66,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    public static String videoUrl="";
     private final int REQUEST_CAMERA = 1;
     private final int REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     private final int REQUEST_READ_EXTERNAL_STORAGE = 3;
@@ -429,52 +430,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        getDataFromBrowser(intent);
-    }
-
-    @SuppressLint("SetJavaScriptEnabled")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary, null));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (WebView.getCurrentWebViewPackage() == null) {
-                Toast.makeText(this, "你的设备不支持WebView", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        }
-        back = findViewById(R.id.back_ico_btn);
-        forward = findViewById(R.id.forward_ico_btn);
-        home = findViewById(R.id.home_ico_btn);
-        more = findViewById(R.id.more_ico_btn);
-        more.setOnClickListener(this);
-        registerForContextMenu(more);
-        ImageButton viewBtn = findViewById(R.id.view_ico_btn);
-        back.setOnClickListener(this);
-        forward.setOnClickListener(this);
-        home.setOnClickListener(this);
-        viewBtn.setOnClickListener(this);
-        stopOrRefresh = findViewById(R.id.stop_or_refresh);
-        addressTxv = findViewById(R.id.addressTxv);
-        stopOrRefresh.setOnClickListener(this);
-        progressBar = findViewById(R.id.progressBar);
-        addressTxv.setOnClickListener(this);
-        PackageManager pm = getPackageManager();
-        PackageInfo packageInfo;
-        try {
-            packageInfo = pm.getPackageInfo(getPackageName(), 0);
-            version = packageInfo.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
+    @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
+    private void initWebView() {
         webView = findViewById(R.id.web);
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.addJavascriptInterface(new InJavaScriptLocalObj(), "local_obj");
         webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);//允许http和https的混合连接，避免存在图片不加载的情况
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                view.loadUrl("javascript:window.local_obj.showSource('<head>'+" +
+                        "document.getElementsByTagName('html')[0].innerHTML+'</head>');");
+                super.onPageFinished(view, url);
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (url == null) {
@@ -505,7 +474,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // 如果是图片类型或者是带有图片链接的类型
             if (hitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE || hitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                Log.e("myerror", hitTestResult.getExtra());
                 builder.setItems(new String[]{getString(R.string.download_pic)}, (dialogInterface, i) -> {
                             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                                 //申请权限
@@ -522,6 +490,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return false;
         });
         webView.setWebChromeClient(new WebChromeClient() {
+
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 uploadMessageAboveL = filePathCallback;
@@ -553,11 +522,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
-        swipeRefreshLayout = findViewById(R.id.srl);
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            String url = webView.getUrl();
-            webView.loadUrl(url);
-        });
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {//开启下载功能
             //显示是否下载的dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -582,11 +546,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setSupportZoom(true);
-        defaultUserAgent = webView.getSettings().getUserAgentString();
+    }
+
+    private void getVersion() {
+        PackageManager pm = getPackageManager();
+        PackageInfo packageInfo;
+        try {
+            packageInfo = pm.getPackageInfo(getPackageName(), 0);
+            version = packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initView() {
+        back = findViewById(R.id.back_ico_btn);
+        forward = findViewById(R.id.forward_ico_btn);
+        home = findViewById(R.id.home_ico_btn);
+        more = findViewById(R.id.more_ico_btn);
+        more.setOnClickListener(this);
+        registerForContextMenu(more);
+        ImageButton viewBtn = findViewById(R.id.play_ico_btn);
+        back.setOnClickListener(this);
+        forward.setOnClickListener(this);
+        home.setOnClickListener(this);
+        viewBtn.setOnClickListener(this);
+        stopOrRefresh = findViewById(R.id.stop_or_refresh);
+        addressTxv = findViewById(R.id.addressTxv);
+        stopOrRefresh.setOnClickListener(this);
+        progressBar = findViewById(R.id.progressBar);
+        addressTxv.setOnClickListener(this);
+        swipeRefreshLayout = findViewById(R.id.srl);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            String url = webView.getUrl();
+            webView.loadUrl(url);
+        });
+    }
+
+    private void initReceiver() {
         receiver = new DownloadCompleteReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
         registerReceiver(receiver, intentFilter);
+    }
+
+    private void load() {
         if (getDataFromBrowser(getIntent())) {
             String action = getIntent().getAction();
             assert action != null;
@@ -602,6 +606,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
             }
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        getDataFromBrowser(intent);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary, null));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (WebView.getCurrentWebViewPackage() == null) {
+                Toast.makeText(this, "你的设备不支持WebView", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
+        getVersion();
+        initView();
+        initWebView();
+        defaultUserAgent = webView.getSettings().getUserAgentString();
+        initReceiver();
+        load();
     }
 
     @Override
@@ -725,7 +754,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.more_ico_btn:
                 showPopupMenu(v);
                 break;
-            case R.id.view_ico_btn:
+            case R.id.play_ico_btn:
+                playVideo();
                 break;
             case R.id.stop_or_refresh:
                 if (canRefresh) {
@@ -740,5 +770,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(intent, INPUT_REQUEST_CODE);
                 break;
         }
+    }
+
+    private void playVideo() {
+        if(videoUrl!=null&&!videoUrl.equals("")){
+            Intent intent=new Intent(this,PlayerActivity.class);
+            intent.putExtra("videoUrl",videoUrl);
+            intent.putExtra("title",webView.getTitle());
+            startActivity(intent);
+        }else {
+            Toast.makeText(this,"没有嗅探到视频",Toast.LENGTH_SHORT).show();
+        }
+
     }
 }

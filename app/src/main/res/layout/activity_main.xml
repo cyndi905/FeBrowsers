@@ -94,12 +94,12 @@
             android:src="@drawable/ic_home" />
 
         <ImageButton
-            android:id="@+id/view_ico_btn"
+            android:id="@+id/play_ico_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_view" />
+            android:src="@drawable/ic_play_arrow" />
 
         <ImageButton
             android:id="@+id/more_ico_btn"
