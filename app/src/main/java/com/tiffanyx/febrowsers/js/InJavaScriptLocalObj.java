@@ -2,9 +2,7 @@ package com.tiffanyx.febrowsers.js;
 
 import android.util.Log;
 import android.webkit.JavascriptInterface;
-
 import com.tiffanyx.febrowsers.MainActivity;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

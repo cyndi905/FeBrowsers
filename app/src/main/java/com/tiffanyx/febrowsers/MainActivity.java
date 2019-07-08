@@ -619,7 +619,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary, null));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (WebView.getCurrentWebViewPackage() == null) {
