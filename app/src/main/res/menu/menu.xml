@@ -7,6 +7,10 @@
         android:id="@+id/share"
         android:title="@string/share" />
     <item
+        android:id="@+id/bookmark"
+        android:title="@string/bookmark"/>
+    <item android:id="@+id/addBookmark" android:title="@string/addBookmark"/>
+    <item
         android:id="@+id/openByOther"
         android:title="@string/openByOther" />
     <item

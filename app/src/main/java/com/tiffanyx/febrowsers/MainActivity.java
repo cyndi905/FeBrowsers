@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -21,12 +22,14 @@ import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -54,10 +57,13 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.tiffanyx.febrowsers.beans.Bookmark;
 import com.tiffanyx.febrowsers.js.InJavaScriptLocalObj;
 import com.tiffanyx.febrowsers.receiver.DownloadCompleteReceiver;
 import com.tiffanyx.febrowsers.util.Constant;
 import com.tiffanyx.febrowsers.zxing.activity.CaptureActivity;
+
+import org.litepal.LitePal;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -84,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ValueCallback<Uri[]> uploadMessageAboveL;
     private final static int FILE_CHOOSER_REQUEST_CODE = 10000;
     private final static int INPUT_REQUEST_CODE = 233;
+    private final static int BOOKMARK_REQUEST_CODE = 2323;
     private ValueCallback<Uri> uploadMessage;
     private ProgressBar progressBar;
     private WebView webView;
@@ -296,10 +303,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case R.id.share:
                     share();
                     return true;
+                case R.id.addBookmark:
+                    addBookmark(v);
+                    return true;
+                case R.id.bookmark:
+                    bookmark();
+                    return true;
             }
             return false;
         });
         popupMenu.show();
+    }
+
+    private void bookmark() {
+        Intent intent=new Intent(this,BookmarkActivity.class);
+        startActivityForResult(intent,BOOKMARK_REQUEST_CODE);
+    }
+
+    private void addBookmark(View v) {
+        Bookmark bookmark=new Bookmark();
+        bookmark.setTitle(webView.getTitle());
+        bookmark.setUrl(webView.getUrl());
+        if(bookmark.save()){
+            final View layout = getLayoutInflater().inflate(R.layout.edit_bookmark_layout, null);
+            final EditText titleEdt =layout.findViewById(R.id.bookmarkTitle);
+            final EditText urlEdt=layout.findViewById(R.id.bookmarkUrl);
+            titleEdt.setText(bookmark.getTitle());
+            urlEdt.setText(bookmark.getUrl());
+            Snackbar.make(v,"已添加到书签",Snackbar.LENGTH_LONG).setAction("编辑", v1 -> {
+                AlertDialog.Builder builder=new AlertDialog.Builder(this);
+                builder.setTitle(R.string.addBookmarkTitle).setView(layout).setPositiveButton(R.string.submit, (dialog, which) -> {
+                    String title=titleEdt.getText().toString();
+                    String url=urlEdt.getText().toString();
+                    if(!TextUtils.isEmpty(title)&&!TextUtils.isEmpty(url)){
+                        bookmark.setTitle(title);
+                        bookmark.setUrl(url);
+                        if(!bookmark.save()){
+                            Toast.makeText(MainActivity.this,"修改书签失败",Toast.LENGTH_LONG).show();
+                        }
+                    }else {
+                        Toast.makeText(MainActivity.this,"书签未修改",Toast.LENGTH_SHORT).show();
+                    }
+                }).setNegativeButton(R.string.cancel,null).show();
+            }).show();
+        }
     }
 
     /**
@@ -626,6 +673,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         }
+        LitePal.getDatabase();
         getVersion();
         initView();
         initWebView();
@@ -701,6 +749,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String s = data.getStringExtra("enterUrl");
             if (s != null)
                 loadOrSearch(s);
+        }else if (requestCode==BOOKMARK_REQUEST_CODE && resultCode == RESULT_OK){
+            assert data != null;
+            String s = data.getStringExtra("url");
+            if (s != null)
+                webView.loadUrl(s);
         }
     }
 

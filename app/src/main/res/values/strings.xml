@@ -13,9 +13,17 @@
     <string name="exit">退出</string>
 
     <string name="about">关于</string>
-
+    <string name="addBookmark">添加到书签</string>
+    <string name="addBookmarkTitle">添加书签</string>
+    <string name="bookmark">书签</string>
     <string name="openByOther">用其他浏览器打开</string>
-
+    <string name="bookmarkTitle">名称</string>
+    <string name="bookmarkUrl">网址</string>
+    <string name="submit">确定</string>
+    <string name="cancel">取消</string>
+    <string name="edit">修改</string>
+    <string name="choice">选择</string>
+    <string name="delete">删除</string>
     <string name="scanQRCode">扫码</string>
     <string name="scanQRCode_long">扫描二维码打开网页</string>
 
@@ -25,5 +33,8 @@
     <string name="requestPCVersion">请求电脑版网页</string>
     <string name="scHome_long">打开首页</string>
     <string name="download_pic">下载图片</string>
+    <string name="noBookmark">无书签</string>
+    <string name="selectAll">全选</string>
+    <string name="unselectAll">全不选</string>
 
 </resources>
