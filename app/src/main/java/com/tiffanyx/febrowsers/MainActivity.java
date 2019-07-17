@@ -110,6 +110,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isDownloadFileReqPermission = false;
     private GeolocationPermissions.Callback callback1=null;
     private String origin1=null;
+    private Timer timer=null;
+    private Snackbar snackbar;
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
         // 指定下载地址
@@ -509,6 +511,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 try {
                     if (url.startsWith("http://") || url.startsWith("https://")) {
+                        if(timer!=null){
+                            timer.cancel();
+                        }
+                        if(snackbar!=null){
+                            snackbar.dismiss();
+                        }
+                        if(callback1!=null){
+                            callback1.invoke(origin1,false,false);
+                        }
+                        callback1=null;
+                        origin1=null;
                         view.loadUrl(url);
                         return true;
                     } else {
@@ -549,31 +562,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-                Snackbar snackbar=Snackbar.make(webView,"允许 "+origin+" 获取你的位置信息吗？",Snackbar.LENGTH_INDEFINITE).setAction("允许", v -> {
+                callback1=callback;
+                origin1=origin;
+                snackbar=Snackbar.make(webView,"允许 "+origin+" 获取你的位置信息吗？",Snackbar.LENGTH_INDEFINITE).setAction("允许", v -> {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)!= PERMISSION_GRANTED&&ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)!=PERMISSION_GRANTED){
                         ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_LOCATION);
-                        callback1=callback;
-                        origin1=origin;
                     }else {
                         callback.invoke(origin,true,true);
                     }
                 });
                 snackbar.show();
-                Timer timer=new Timer();
+                timer=new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
                         runOnUiThread(snackbar::dismiss);
                         callback.invoke(origin,false,false);
+                        snackbar=null;
                     }
                 },5000);
                 super.onGeolocationPermissionsShowPrompt(origin, callback);
-            }
-
-            @Override
-            public void onGeolocationPermissionsHidePrompt() {
-                Toast.makeText(MainActivity.this,"已拒绝获取位置权限",Toast.LENGTH_SHORT).show();
-                super.onGeolocationPermissionsHidePrompt();
             }
 
             @Override
