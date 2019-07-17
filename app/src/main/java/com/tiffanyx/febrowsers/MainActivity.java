@@ -36,6 +36,7 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.GeolocationPermissions;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -68,15 +69,20 @@ import org.litepal.LitePal;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static String videoUrl="";
     private final int REQUEST_CAMERA = 1;
     private final int REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     private final int REQUEST_READ_EXTERNAL_STORAGE = 3;
+    private final int REQUEST_LOCATION=4;
     private final String DEFAULT_HOME_PAGE = "https://m.baidu.com/?tn=simple#";
     private final static String OPEN_HOME_PAGE = "openHomePage";
     private final static String SCAN_QR_CODE = "scanQR";
@@ -102,6 +108,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DownloadCompleteReceiver receiver;
     private boolean isBlockScheme = false;
     private boolean isDownloadFileReqPermission = false;
+    private GeolocationPermissions.Callback callback1=null;
+    private String origin1=null;
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
         // 指定下载地址
@@ -195,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void scanQRCode() {
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
             MainActivity.this.requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA);
         } else {
             Intent intent = new Intent(getApplicationContext(), CaptureActivity.class);
@@ -482,6 +490,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initWebView() {
         webView = findViewById(R.id.web);
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setGeolocationEnabled(true);
         webView.addJavascriptInterface(new InJavaScriptLocalObj(), "local_obj");
         webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);//允许http和https的混合连接，避免存在图片不加载的情况
         webView.setWebViewClient(new WebViewClient() {
@@ -523,13 +533,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (hitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE || hitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setItems(new String[]{getString(R.string.download_pic)}, (dialogInterface, i) -> {
-                            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
                                 //申请权限
                                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
                             } else {
                                 savePic();
                             }
-
                         }
                 );
                 builder.show();
@@ -538,11 +547,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return false;
         });
         webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                Snackbar snackbar=Snackbar.make(webView,"允许 "+origin+" 获取你的位置信息吗？",Snackbar.LENGTH_INDEFINITE).setAction("允许", v -> {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)!= PERMISSION_GRANTED&&ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)!=PERMISSION_GRANTED){
+                        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_LOCATION);
+                        callback1=callback;
+                        origin1=origin;
+                    }else {
+                        callback.invoke(origin,true,true);
+                    }
+                });
+                snackbar.show();
+                Timer timer=new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(snackbar::dismiss);
+                        callback.invoke(origin,false,false);
+                    }
+                },5000);
+                super.onGeolocationPermissionsShowPrompt(origin, callback);
+            }
+
+            @Override
+            public void onGeolocationPermissionsHidePrompt() {
+                Toast.makeText(MainActivity.this,"已拒绝获取位置权限",Toast.LENGTH_SHORT).show();
+                super.onGeolocationPermissionsHidePrompt();
+            }
 
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 uploadMessageAboveL = filePathCallback;
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
                     //申请权限
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
                 } else {
@@ -553,7 +590,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
-                if (webView != null) {//判断webview是否为空，避免程序退出销毁webview时出现空指针错误
+                if (webView != null) {//判断webView是否为空，避免程序退出销毁webView时出现空指针错误
                     if (newProgress != 100) {
                         canRefresh = false;
                         addressTxv.setHint("正在加载...");
@@ -577,7 +614,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             builder.setTitle("文件下载");
             builder.setMessage("是否要下载 " + filename + " ？");
             builder.setPositiveButton("好的", (dialog, which) -> {
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
                     downloadUrl = url;
                     downloadContentDisposition = contentDisposition;
                     downloadMimeType = mimetype;
@@ -687,7 +724,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (requestCode) {
             case REQUEST_CAMERA:
                 //判断是否已经授权
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {//已授权
+                if (grantResults[0] == PERMISSION_GRANTED) {//已授权
                     Intent intent = new Intent(getApplicationContext(), CaptureActivity.class);
                     startActivityForResult(intent, 100);
                 } else {
@@ -697,7 +734,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case REQUEST_WRITE_EXTERNAL_STORAGE:
                 //判断是否已经授权
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {//已授权
+                if (grantResults[0] == PERMISSION_GRANTED) {//已授权
                     if (isDownloadFileReqPermission) {
                         downloadBySystem(downloadUrl, downloadContentDisposition, downloadMimeType);
                         isDownloadFileReqPermission = false;
@@ -711,12 +748,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case REQUEST_READ_EXTERNAL_STORAGE:
                 //判断是否已经授权
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {//已授权
+                if (grantResults[0] == PERMISSION_GRANTED) {//已授权
                     openImageChooserActivity();
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle("缺少必要的权限").setMessage("请授予读取存储权限，否则无法读取文件！").setPositiveButton("授予权限", (dialogInterface, i) -> requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE)).setNegativeButton("不了", null).show();
                 }
+                break;
+            case REQUEST_LOCATION:
+                //判断是否已经授权
+                if (grantResults[0] == PERMISSION_GRANTED) {//已授权
+                    if(origin1!=null&&callback1!=null)
+                        callback1.invoke(origin1,true,true);
+                }
+                callback1=null;
+                origin1=null;
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
