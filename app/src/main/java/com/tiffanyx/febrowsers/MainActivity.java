@@ -5,10 +5,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ClipData;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -78,11 +76,11 @@ import java.util.regex.Pattern;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    public static String videoUrl="";
+    public static String videoUrl = "";
     private final int REQUEST_CAMERA = 1;
     private final int REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     private final int REQUEST_READ_EXTERNAL_STORAGE = 3;
-    private final int REQUEST_LOCATION=4;
+    private final int REQUEST_LOCATION = 4;
     private final String DEFAULT_HOME_PAGE = "https://m.baidu.com/?tn=simple#";
     private final static String OPEN_HOME_PAGE = "openHomePage";
     private final static String SCAN_QR_CODE = "scanQR";
@@ -108,9 +106,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DownloadCompleteReceiver receiver;
     private boolean isBlockScheme = false;
     private boolean isDownloadFileReqPermission = false;
-    private GeolocationPermissions.Callback callback1=null;
-    private String origin1=null;
-    private Timer timer=null;
+    private GeolocationPermissions.Callback callback1 = null;
+    private String origin1 = null;
+    private Timer timer = null;
     private Snackbar snackbar;
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
@@ -326,35 +324,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void bookmark() {
-        Intent intent=new Intent(this,BookmarkActivity.class);
-        startActivityForResult(intent,BOOKMARK_REQUEST_CODE);
+        Intent intent = new Intent(this, BookmarkActivity.class);
+        startActivityForResult(intent, BOOKMARK_REQUEST_CODE);
     }
 
     private void addBookmark(View v) {
-        Bookmark bookmark=new Bookmark();
+        Bookmark bookmark = new Bookmark();
         bookmark.setTitle(webView.getTitle());
         bookmark.setUrl(webView.getUrl());
-        if(bookmark.save()){
+        if (bookmark.save()) {
             final View layout = getLayoutInflater().inflate(R.layout.edit_bookmark_layout, null);
-            final EditText titleEdt =layout.findViewById(R.id.bookmarkTitle);
-            final EditText urlEdt=layout.findViewById(R.id.bookmarkUrl);
+            final EditText titleEdt = layout.findViewById(R.id.bookmarkTitle);
+            final EditText urlEdt = layout.findViewById(R.id.bookmarkUrl);
             titleEdt.setText(bookmark.getTitle());
             urlEdt.setText(bookmark.getUrl());
-            Snackbar.make(v,"已添加到书签",Snackbar.LENGTH_LONG).setAction("编辑", v1 -> {
-                AlertDialog.Builder builder=new AlertDialog.Builder(this);
+            Snackbar.make(v, "已添加到书签", Snackbar.LENGTH_LONG).setAction("编辑", v1 -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(R.string.addBookmarkTitle).setView(layout).setPositiveButton(R.string.submit, (dialog, which) -> {
-                    String title=titleEdt.getText().toString();
-                    String url=urlEdt.getText().toString();
-                    if(!TextUtils.isEmpty(title)&&!TextUtils.isEmpty(url)){
+                    String title = titleEdt.getText().toString();
+                    String url = urlEdt.getText().toString();
+                    if (!TextUtils.isEmpty(title) && !TextUtils.isEmpty(url)) {
                         bookmark.setTitle(title);
                         bookmark.setUrl(url);
-                        if(!bookmark.save()){
-                            Toast.makeText(MainActivity.this,"修改书签失败",Toast.LENGTH_LONG).show();
+                        if (!bookmark.save()) {
+                            Toast.makeText(MainActivity.this, "修改书签失败", Toast.LENGTH_LONG).show();
                         }
-                    }else {
-                        Toast.makeText(MainActivity.this,"书签未修改",Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "书签未修改", Toast.LENGTH_SHORT).show();
                     }
-                }).setNegativeButton(R.string.cancel,null).show();
+                }).setNegativeButton(R.string.cancel, null).show();
             }).show();
         }
     }
@@ -511,17 +509,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 try {
                     if (url.startsWith("http://") || url.startsWith("https://")) {
-                        if(timer!=null){
+                        if (timer != null) {
                             timer.cancel();
                         }
-                        if(snackbar!=null){
+                        if (snackbar != null) {
                             snackbar.dismiss();
                         }
-                        if(callback1!=null){
-                            callback1.invoke(origin1,false,false);
+                        if (callback1 != null) {
+                            callback1.invoke(origin1, false, false);
                         }
-                        callback1=null;
-                        origin1=null;
+                        callback1 = null;
+                        origin1 = null;
                         view.loadUrl(url);
                         return true;
                     } else {
@@ -562,25 +560,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-                callback1=callback;
-                origin1=origin;
-                snackbar=Snackbar.make(webView,"允许 "+origin+" 获取你的位置信息吗？",Snackbar.LENGTH_INDEFINITE).setAction("允许", v -> {
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)!= PERMISSION_GRANTED&&ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)!=PERMISSION_GRANTED){
-                        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_LOCATION);
-                    }else {
-                        callback.invoke(origin,true,true);
+                callback1 = callback;
+                origin1 = origin;
+                snackbar = Snackbar.make(webView, "允许 " + origin + " 获取你的位置信息吗？", Snackbar.LENGTH_INDEFINITE).setAction("允许", v -> {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+                    } else {
+                        callback.invoke(origin, true, true);
                     }
                 });
                 snackbar.show();
-                timer=new Timer();
+                timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
                         runOnUiThread(snackbar::dismiss);
-                        callback.invoke(origin,false,false);
-                        snackbar=null;
+                        callback.invoke(origin, false, false);
+                        snackbar = null;
                     }
-                },5000);
+                }, 5000);
                 super.onGeolocationPermissionsShowPrompt(origin, callback);
             }
 
@@ -766,11 +764,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case REQUEST_LOCATION:
                 //判断是否已经授权
                 if (grantResults[0] == PERMISSION_GRANTED) {//已授权
-                    if(origin1!=null&&callback1!=null)
-                        callback1.invoke(origin1,true,true);
+                    if (origin1 != null && callback1 != null)
+                        callback1.invoke(origin1, true, true);
                 }
-                callback1=null;
-                origin1=null;
+                callback1 = null;
+                origin1 = null;
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -786,7 +784,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (result.startsWith("http://") || result.startsWith("https://")) {
                     webView.loadUrl(result);
                 } else {
-                    Toast.makeText(getApplicationContext(), "这貌似不是网址。", Toast.LENGTH_LONG).show();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("查看二维码内容");
+                    builder.setMessage("这貌似不是网址。是否要查看二维码内容？");
+                    builder.setPositiveButton("好的", (dialog, which) -> {
+                        String html="<html><head><title>识别结果</title></head><h3>识别结果</h3>"+result+"</html>";
+                        webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+                    });
+                    builder.setNegativeButton("不要", null);
+                    builder.show();
                 }
             }
         } else if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
@@ -803,7 +809,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String s = data.getStringExtra("enterUrl");
             if (s != null)
                 loadOrSearch(s);
-        }else if (requestCode==BOOKMARK_REQUEST_CODE && resultCode == RESULT_OK){
+        } else if (requestCode == BOOKMARK_REQUEST_CODE && resultCode == RESULT_OK) {
             assert data != null;
             String s = data.getStringExtra("url");
             if (s != null)
@@ -881,13 +887,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void playVideo() {
-        if(videoUrl!=null&&!videoUrl.equals("")){
-            Intent intent=new Intent(this,PlayerActivity.class);
-            intent.putExtra("videoUrl",videoUrl);
-            intent.putExtra("title",webView.getTitle());
+        if (videoUrl != null && !videoUrl.equals("")) {
+            Intent intent = new Intent(this, PlayerActivity.class);
+            intent.putExtra("videoUrl", videoUrl);
+            intent.putExtra("title", webView.getTitle());
             startActivity(intent);
-        }else {
-            Toast.makeText(this,"没有嗅探到视频",Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "没有嗅探到视频", Toast.LENGTH_SHORT).show();
         }
 
     }
