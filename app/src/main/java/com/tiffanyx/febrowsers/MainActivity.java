@@ -788,7 +788,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     builder.setTitle(R.string.QRCodeInfo);
                     builder.setMessage(R.string.QRCodeInfoTip);
                     builder.setPositiveButton(R.string.submit, (dialog, which) -> {
-                        String html="<html><head><title>"+R.string.QRCodeResult+"</title></head><h3>"+R.string.QRCodeResult+"</h3>"+result+"</html>";
+                        String html="<html><head><title>"+getString(R.string.QRCodeResult)+"</title></head><h3>"+getString(R.string.QRCodeResult)+"</h3>"+result+"</html>";
                         webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
                     });
                     builder.setNegativeButton(R.string.cancel, null);
