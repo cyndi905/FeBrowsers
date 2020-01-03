@@ -139,14 +139,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         // 添加一个下载任务
         downloadManager.enqueue(request);
-        Toast.makeText(MainActivity.this, "开始下载", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, R.string.beginDownload, Toast.LENGTH_SHORT).show();
     }
 
     private void forward() {
         if (webView.canGoForward()) {
             webView.goForward();
         } else {
-            Toast.makeText(MainActivity.this, "已经不能前进了！", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, R.string.cannotForward, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 webView.goBack();
             }
         } else {
-            Toast.makeText(MainActivity.this, "已经不能后退了！", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, R.string.cannotBack, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -240,24 +240,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent i = new Intent(Intent.ACTION_GET_CONTENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);
         i.setType("image/*");
-        startActivityForResult(Intent.createChooser(i, "选择图片"), FILE_CHOOSER_REQUEST_CODE);
+        startActivityForResult(Intent.createChooser(i, getString(R.string.choicePic)), FILE_CHOOSER_REQUEST_CODE);
     }
 
     private void showAbout() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("关于浏览器");
+        builder.setTitle(R.string.aboutBrowser);
         builder.setIcon(R.mipmap.ic_launcher_round);
-        builder.setMessage("Fe浏览器" + version + "，一款纯净的无痕浏览器。本浏览器基于系统内置的WebView内核。");
-        builder.setPositiveButton("知道了", null);
+        builder.setMessage(R.string.app_name + version + R.string.appInfo);
+        builder.setPositiveButton(R.string.getIt, null);
         builder.show();
     }
 
     private void exit() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("退出浏览器");
-        builder.setMessage("真的要退出浏览器吗？");
-        builder.setPositiveButton("再见", (dialog, which) -> finish());
-        builder.setNegativeButton("再看一下", null);
+        builder.setTitle(R.string.exitApp);
+        builder.setMessage(R.string.exitAppTip);
+        builder.setPositiveButton(R.string.exitConfirm, (dialog, which) -> finish());
+        builder.setNegativeButton(R.string.exitCancle, null);
         builder.show();
     }
 
@@ -266,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setView(view);
         builder.setMessage(webView.getTitle());
-        builder.setPositiveButton("确定", null);
+        builder.setPositiveButton(R.string.submit, null);
         builder.show();
     }
 
@@ -278,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 long currentTime = System.currentTimeMillis();
                 if ((currentTime - pressBackStartTime) >= 1500) {
-                    Toast.makeText(MainActivity.this, "再按一次退出", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.pressAgain, Toast.LENGTH_SHORT).show();
                     pressBackStartTime = currentTime;
                 } else {
                     finish();
@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             final EditText urlEdt = layout.findViewById(R.id.bookmarkUrl);
             titleEdt.setText(bookmark.getTitle());
             urlEdt.setText(bookmark.getUrl());
-            Snackbar.make(v, "已添加到书签", Snackbar.LENGTH_LONG).setAction("编辑", v1 -> {
+            Snackbar.make(v, R.string.addBookmarkSucc, Snackbar.LENGTH_LONG).setAction(R.string.edit, v1 -> {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(R.string.addBookmarkTitle).setView(layout).setPositiveButton(R.string.submit, (dialog, which) -> {
                     String title = titleEdt.getText().toString();
@@ -347,10 +347,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         bookmark.setTitle(title);
                         bookmark.setUrl(url);
                         if (!bookmark.save()) {
-                            Toast.makeText(MainActivity.this, "修改书签失败", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, R.string.editBookmarkFailed, Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        Toast.makeText(MainActivity.this, "书签未修改", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.bookmarkNoEdit, Toast.LENGTH_SHORT).show();
                     }
                 }).setNegativeButton(R.string.cancel, null).show();
             }).show();
@@ -450,10 +450,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             fos.close();
             runOnUiThread(() -> {
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
-                Toast.makeText(MainActivity.this, "保存成功", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.savePicSucc, Toast.LENGTH_SHORT).show();
             });
         } catch (Exception e) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "保存失败", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.savePicFailed, Toast.LENGTH_SHORT).show());
             Log.e("myerror", e.getMessage());
         } finally {
             try {
@@ -477,7 +477,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         int i = url.lastIndexOf(".");
                         save2Album(drawable2Bitmap(drawable), UUID.randomUUID().toString() + "." + url.substring((i + 1)));
                     } else {
-                        Toast.makeText(MainActivity.this, "下载失败", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, R.string.downloadFailed, Toast.LENGTH_LONG).show();
                     }
                 } catch (Exception e) {
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "下载出错" + e.getMessage(), Toast.LENGTH_LONG).show());
@@ -532,7 +532,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 } catch (Exception e) {
                     isBlockScheme = true;
-                    Toast.makeText(MainActivity.this, "不支持此应用转跳，已拦截", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.unsupportJump, Toast.LENGTH_SHORT).show();
                     return true;
                 }
             }
@@ -562,7 +562,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 callback1 = callback;
                 origin1 = origin;
-                snackbar = Snackbar.make(webView, "允许 " + origin + " 获取你的位置信息吗？", Snackbar.LENGTH_INDEFINITE).setAction("允许", v -> {
+                snackbar = Snackbar.make(webView, getString(R.string.allow)+" "+ origin + getString(R.string.allowGetLocation), Snackbar.LENGTH_INDEFINITE).setAction(R.string.allow, v -> {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
                     } else {
@@ -599,7 +599,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (webView != null) {//判断webView是否为空，避免程序退出销毁webView时出现空指针错误
                     if (newProgress != 100) {
                         canRefresh = false;
-                        addressTxv.setHint("正在加载...");
+                        addressTxv.setHint(R.string.loading);
                         stopOrRefresh.setBackgroundResource(R.drawable.ic_action_stop);
                         progressBar.setVisibility(View.VISIBLE);
                         progressBar.setProgress(newProgress);
@@ -617,9 +617,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //显示是否下载的dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             String filename = url.substring(url.lastIndexOf('/') + 1);
-            builder.setTitle("文件下载");
-            builder.setMessage("是否要下载 " + filename + " ？");
-            builder.setPositiveButton("好的", (dialog, which) -> {
+            builder.setTitle(R.string.fileDownload);
+            builder.setMessage(R.string.isFileDownload + filename + " ？");
+            builder.setPositiveButton(R.string.submit, (dialog, which) -> {
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
                     downloadUrl = url;
                     downloadContentDisposition = contentDisposition;
@@ -631,7 +631,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     downloadBySystem(url, contentDisposition, mimetype);
                 }
             });
-            builder.setNegativeButton("不要下载", null);
+            builder.setNegativeButton(R.string.cancel, null);
             builder.setCancelable(false);
             builder.show();
         });
@@ -712,7 +712,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary, null));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (WebView.getCurrentWebViewPackage() == null) {
-                Toast.makeText(this, "你的设备不支持WebView", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.deviceNotWebview, Toast.LENGTH_LONG).show();
                 finish();
             }
         }
@@ -735,7 +735,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     startActivityForResult(intent, 100);
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("缺少必要的权限").setMessage("请授予相机权限，否则无法进行扫码！").setPositiveButton("授予权限", (dialogInterface, i) -> requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA)).setNegativeButton("不了", null).show();
+                    builder.setTitle(R.string.noPermissions).setMessage(R.string.noCamPersmissions).setPositiveButton(R.string.submitPermissions, (dialogInterface, i) -> requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA)).setNegativeButton(R.string.cancel, null).show();
                 }
                 break;
             case REQUEST_WRITE_EXTERNAL_STORAGE:
@@ -749,7 +749,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("缺少必要的权限").setMessage("请授予存储权限，否则无法进行下载！").setPositiveButton("授予权限", (dialog, which) -> requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE)).setNegativeButton("不了", null).show();
+                    builder.setTitle(R.string.noPermissions).setMessage(R.string.noWriteStoragePermissions).setPositiveButton(R.string.submitPermissions, (dialog, which) -> requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE)).setNegativeButton(R.string.cancel, null).show();
                 }
                 break;
             case REQUEST_READ_EXTERNAL_STORAGE:
@@ -758,7 +758,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     openImageChooserActivity();
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("缺少必要的权限").setMessage("请授予读取存储权限，否则无法读取文件！").setPositiveButton("授予权限", (dialogInterface, i) -> requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE)).setNegativeButton("不了", null).show();
+                    builder.setTitle(R.string.noPermissions).setMessage(R.string.noReadStoragePermissions).setPositiveButton(R.string.submitPermissions, (dialogInterface, i) -> requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE)).setNegativeButton(R.string.cancel, null).show();
                 }
                 break;
             case REQUEST_LOCATION:
@@ -785,13 +785,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     webView.loadUrl(result);
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("查看二维码内容");
-                    builder.setMessage("这貌似不是网址。是否要查看二维码内容？");
-                    builder.setPositiveButton("好的", (dialog, which) -> {
-                        String html="<html><head><title>识别结果</title></head><h3>识别结果</h3>"+result+"</html>";
+                    builder.setTitle(R.string.QRCodeInfo);
+                    builder.setMessage(R.string.QRCodeInfoTip);
+                    builder.setPositiveButton(R.string.submit, (dialog, which) -> {
+                        String html="<html><head><title>"+R.string.QRCodeResult+"</title></head><h3>"+R.string.QRCodeResult+"</h3>"+result+"</html>";
                         webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
                     });
-                    builder.setNegativeButton("不要", null);
+                    builder.setNegativeButton(R.string.cancel, null);
                     builder.show();
                 }
             }
@@ -893,7 +893,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra("title", webView.getTitle());
             startActivity(intent);
         } else {
-            Toast.makeText(this, "没有嗅探到视频", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.noFindVedio, Toast.LENGTH_SHORT).show();
         }
 
     }

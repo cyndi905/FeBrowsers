@@ -2,39 +2,74 @@
 
 <resources>
 
-    <string name="app_name">Fe浏览器</string>
+    <string name="app_name">Fe Browser</string>
 
-    <string name="homePage">首页</string>
+    <string name="homePage">Home</string>
 
-    <string name="nextPage">前进</string>
+    <string name="nextPage">Forward</string>
 
-    <string name="backPage">返回</string>
+    <string name="backPage">Back</string>
 
-    <string name="exit">退出</string>
+    <string name="exit">Exit</string>
 
-    <string name="about">关于</string>
-    <string name="addBookmark">添加到书签</string>
-    <string name="addBookmarkTitle">添加书签</string>
-    <string name="bookmark">书签</string>
-    <string name="openByOther">用其他浏览器打开</string>
-    <string name="bookmarkTitle">名称</string>
-    <string name="bookmarkUrl">网址</string>
-    <string name="submit">确定</string>
-    <string name="cancel">取消</string>
-    <string name="edit">修改</string>
-    <string name="choice">选择</string>
-    <string name="delete">删除</string>
-    <string name="scanQRCode">扫码</string>
-    <string name="scanQRCode_long">扫描二维码打开网页</string>
+    <string name="about">About</string>
+    <string name="addBookmark">Add to bookmark</string>
+    <string name="addBookmarkTitle">Add bookmark</string>
+    <string name="bookmark">Bookmarks</string>
+    <string name="openByOther">Open in others Browsers</string>
+    <string name="bookmarkTitle">Name</string>
+    <string name="bookmarkUrl">Website</string>
+    <string name="submit">submit</string>
+    <string name="cancel">cancel</string>
+    <string name="edit">Edit</string>
+    <string name="choice">Choice</string>
+    <string name="delete">Delete</string>
+    <string name="scanQRCode">Scan QR Code</string>
+    <string name="scanQRCode_long">Scan QR Code and open</string>
 
-    <string name="search">搜索</string>
-    <string name="stop">停止</string>
-    <string name="share">分享</string>
-    <string name="requestPCVersion">请求电脑版网页</string>
-    <string name="scHome_long">打开首页</string>
-    <string name="download_pic">下载图片</string>
-    <string name="noBookmark">无书签</string>
-    <string name="selectAll">全选</string>
-    <string name="unselectAll">全不选</string>
+    <string name="search">Search</string>
+    <string name="stop">Stop</string>
+    <string name="share">Share</string>
+    <string name="requestPCVersion">Desktop site</string>
+    <string name="scHome_long">Home page</string>
+    <string name="download_pic">Download picture</string>
+    <string name="noBookmark">No bookmark</string>
+    <string name="selectAll">Select all</string>
+    <string name="unselectAll">Unselect all</string>
+    <string name="beginDownload">Begin Download</string>
+    <string name="cannotForward">Can\'t Forward</string>
+    <string name="cannotBack">Can\'t Back again!</string>
+    <string name="aboutBrowser">About this browser</string>
+    <string name="appInfo">, a clean and seamless browser. It\'s base on Webview.</string>
+    <string name="getIt">I get it.</string>
+    <string name="exitApp">Exit the Browser</string>
+    <string name="exitAppTip">Are you really want to exit?</string>
+    <string name="exitConfirm">Yes</string>
+    <string name="exitCancle">No</string>
+    <string name="pressAgain">Press again to exit</string>
+    <string name="addBookmarkSucc">Add bookmark successful</string>
+    <string name="editBookmarkFailed">Edit bookmark failed</string>
+    <string name="bookmarkNoEdit">Bookmark no change</string>
+    <string name="savePicSucc">Successful</string>
+    <string name="savePicFailed">Failed</string>
+    <string name="downloadFailed">Download failed</string>
+    <string name="unsupportJump">Can\'t jump to this app, intercepted it.</string>
+    <string name="allow">Allow</string>
+    <string name="allowGetLocation">" get your location information？"</string>
+    <string name="loading">Loading...</string>
+    <string name="fileDownload">File download</string>
+    <string name="isFileDownload">"Are you want to download file "</string>
+    <string name="deviceNotWebview">Your device not support webview</string>
+    <string name="noPermissions">No permissions</string>
+    <string name="submitPermissions">Allow</string>
+    <string name="noCamPersmissions">We need your camera,otherwise we can\'t scan QRCode</string>
+    <string name="noWriteStoragePermissions">We need write Storage Permissions,otherwise we can\'t download files</string>
+    <string name="noReadStoragePermissions">We need read storage permissions, otherwis we can\'t read files</string>
+    <string name="noFindVedio">Can\'t find vedio</string>
+    <string name="QRCodeInfo">View the QRCode content</string>
+    <string name="QRCodeInfoTip">This isn\'t a website, you wanna get it information?</string>
+    <string name="QRCodeResult">Result</string>
+    <string name="choicePic">Choice picture</string>
+    <string name="enterSiteTip">Search or Enter URL</string>
 
 </resources>

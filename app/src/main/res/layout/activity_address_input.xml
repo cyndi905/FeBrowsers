@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/radius_tv"
             android:drawableLeft="@drawable/ic_web"
-            android:hint="请输入网址或搜索内容"
+            android:hint="@string/enterSiteTip"
             android:paddingRight="10dp"
             android:textSize="15sp"
             android:textColor="@android:color/white"

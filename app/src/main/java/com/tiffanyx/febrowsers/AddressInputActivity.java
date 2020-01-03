@@ -28,22 +28,14 @@ public class AddressInputActivity extends AppCompatActivity {
         editText.requestFocus();
         //显示软键盘
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    returnResult();
-                }
-                return false;
-            }
-        });
-        imageButton = findViewById(R.id.confirm);
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
                 returnResult();
             }
+            return false;
         });
+        imageButton = findViewById(R.id.confirm);
+        imageButton.setOnClickListener(v -> returnResult());
     }
 
     private void returnResult() {

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Fe浏览器</string>
+
+    <string name="homePage">首页</string>
+
+    <string name="nextPage">前进</string>
+
+    <string name="backPage">返回</string>
+
+    <string name="exit">退出</string>
+
+    <string name="about">关于</string>
+    <string name="addBookmark">添加到书签</string>
+    <string name="addBookmarkTitle">添加书签</string>
+    <string name="bookmark">书签</string>
+    <string name="openByOther">用其他浏览器打开</string>
+    <string name="bookmarkTitle">名称</string>
+    <string name="bookmarkUrl">网址</string>
+    <string name="submit">确定</string>
+    <string name="cancel">取消</string>
+    <string name="edit">修改</string>
+    <string name="choice">选择</string>
+    <string name="delete">删除</string>
+    <string name="scanQRCode">扫码</string>
+    <string name="scanQRCode_long">扫描二维码打开网页</string>
+
+    <string name="search">搜索</string>
+    <string name="stop">停止</string>
+    <string name="share">分享</string>
+    <string name="requestPCVersion">请求电脑版网页</string>
+    <string name="scHome_long">打开首页</string>
+    <string name="download_pic">下载图片</string>
+    <string name="noBookmark">无书签</string>
+    <string name="selectAll">全选</string>
+    <string name="unselectAll">全不选</string>
+    <string name="beginDownload">开始下载</string>
+    <string name="cannotForward">已经不能前进了！</string>
+    <string name="cannotBack">已经不能后退了！</string>
+    <string name="aboutBrowser">关于浏览器</string>
+    <string name="appInfo">，一款纯净的无痕浏览器。本浏览器基于系统内置的WebView内核。</string>
+    <string name="getIt">知道了</string>
+    <string name="exitApp">退出浏览器</string>
+    <string name="exitAppTip">真的要退出浏览器吗？</string>
+    <string name="exitConfirm">再见</string>
+    <string name="exitCancle">再看一下</string>
+    <string name="pressAgain">再按一次退出</string>
+    <string name="addBookmarkSucc">已添加到书签</string>
+    <string name="editBookmarkFailed">修改书签失败</string>
+    <string name="bookmarkNoEdit">书签未修改</string>
+    <string name="savePicSucc">保存成功</string>
+    <string name="savePicFailed">保存失败</string>
+    <string name="downloadFailed">下载失败</string>
+    <string name="unsupportJump">不支持此应用转跳，已拦截</string>
+    <string name="allow">允许</string>
+    <string name="allowGetLocation">" 获取你的位置信息吗？"</string>
+    <string name="loading">正在加载...</string>
+    <string name="fileDownload">文件下载</string>
+    <string name="isFileDownload">"是否要下载 "</string>
+    <string name="deviceNotWebview">你的设备不支持WebView</string>
+    <string name="noPermissions">缺少必要的权限</string>
+    <string name="submitPermissions">授予权限</string>
+    <string name="noCamPersmissions">请授予相机权限，否则无法进行扫码！</string>
+    <string name="noWriteStoragePermissions">请授予存储权限，否则无法进行下载！</string>
+    <string name="noReadStoragePermissions">请授予读取存储权限，否则无法读取文件！</string>
+    <string name="noFindVedio">没有嗅探到视频</string>
+    <string name="QRCodeInfo">查看二维码内容</string>
+    <string name="QRCodeInfoTip">这貌似不是网址。是否要查看二维码内容？</string>
+    <string name="QRCodeResult">识别结果</string>
+    <string name="choicePic">选择图片</string>
+    <string name="enterSiteTip">请输入网址或搜索内容</string>
+</resources>
