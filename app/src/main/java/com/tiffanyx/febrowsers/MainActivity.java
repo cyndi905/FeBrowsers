@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String origin1 = null;
     private Timer timer = null;
     private Snackbar snackbar;
+    private boolean isRequestPCVersion=false;
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
         // 指定下载地址
@@ -220,7 +221,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void requestPCVersion(MenuItem item) {
         if (item.isChecked()) {
             item.setChecked(false);
+            isRequestPCVersion=false;
         } else {
+            isRequestPCVersion=true;
             item.setChecked(true);
         }
         if (item.isChecked()) {
@@ -291,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void showPopupMenu(View v) {
         PopupMenu popupMenu = new PopupMenu(this, v);
         popupMenu.inflate(R.menu.menu);
+        popupMenu.getMenu().getItem(5).setChecked(isRequestPCVersion);
         popupMenu.setOnMenuItemClickListener(menuItem -> {
             switch (menuItem.getItemId()) {
                 case R.id.about:
