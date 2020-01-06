@@ -7,6 +7,7 @@ import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -60,6 +61,7 @@ import com.tiffanyx.febrowsers.beans.Bookmark;
 import com.tiffanyx.febrowsers.js.InJavaScriptLocalObj;
 import com.tiffanyx.febrowsers.receiver.DownloadCompleteReceiver;
 import com.tiffanyx.febrowsers.util.Constant;
+import com.tiffanyx.febrowsers.util.UrlUtil;
 import com.tiffanyx.febrowsers.zxing.activity.CaptureActivity;
 
 import org.litepal.LitePal;
@@ -81,7 +83,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     private final int REQUEST_READ_EXTERNAL_STORAGE = 3;
     private final int REQUEST_LOCATION = 4;
+    private String homePage = "";
     private final String DEFAULT_HOME_PAGE = "https://m.baidu.com/?tn=simple#";
+    private final String DEFAULT_SEARCH_ENGINE = "https://www.baidu.com/s?wd=";
+    private String searchEngine="";
     private final static String OPEN_HOME_PAGE = "openHomePage";
     private final static String SCAN_QR_CODE = "scanQR";
     private String defaultUserAgent;
@@ -94,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ValueCallback<Uri[]> uploadMessageAboveL;
     private final static int FILE_CHOOSER_REQUEST_CODE = 10000;
     private final static int INPUT_REQUEST_CODE = 233;
+    private final static int SETTING_REQUEST_CODE = 12;
     private final static int BOOKMARK_REQUEST_CODE = 2323;
     private ValueCallback<Uri> uploadMessage;
     private ProgressBar progressBar;
@@ -110,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String origin1 = null;
     private Timer timer = null;
     private Snackbar snackbar;
-    private boolean isRequestPCVersion=false;
+    private boolean isRequestPCVersion = false;
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
         // 指定下载地址
@@ -152,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void search(String s) {//搜索方法
-        webView.loadUrl("https://www.baidu.com/s?wd=" + s);
+        webView.loadUrl(searchEngine + s);
     }
 
     private void goBack() {//返回上一页方法
@@ -169,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void goHome() {
-        webView.loadUrl(DEFAULT_HOME_PAGE);
+        webView.loadUrl(homePage);
     }
 
     private void changeUserAgent() {
@@ -188,14 +194,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (s.startsWith("http://") || s.startsWith("https://")) {
                 webView.loadUrl(s);
             } else {
-                String regex = "(((https|http)?://)?([a-z0-9]+[.])|(www.))"
-                        + "\\w+[.|\\/]([a-z0-9]{0,})?[[.]([a-z0-9]{0,})]+((/[\\S&&[^,;\u4E00-\u9FA5]]+)+)?([.][a-z0-9]{0,}+|/?)";
-                Pattern pat = Pattern.compile(regex.trim());//对比
-                Matcher mat = pat.matcher(s.trim());
-                boolean isUrl = mat.matches();
+                String ss = "http://" + s;
+                boolean isUrl = UrlUtil.isUrl(ss.trim());
                 if (isUrl) {
-                    s = "http://" + s;
-                    webView.loadUrl(s);
+                    webView.loadUrl(ss);
                 } else {
                     search(s);
                 }
@@ -221,9 +223,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void requestPCVersion(MenuItem item) {
         if (item.isChecked()) {
             item.setChecked(false);
-            isRequestPCVersion=false;
+            isRequestPCVersion = false;
         } else {
-            isRequestPCVersion=true;
+            isRequestPCVersion = true;
             item.setChecked(true);
         }
         if (item.isChecked()) {
@@ -250,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(R.string.aboutBrowser);
         builder.setIcon(R.mipmap.ic_launcher_round);
-        builder.setMessage(R.string.app_name + version + R.string.appInfo);
+        builder.setMessage(getString(R.string.app_name) + version + getString(R.string.appInfo));
         builder.setPositiveButton(R.string.getIt, null);
         builder.show();
     }
@@ -320,6 +322,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return true;
                 case R.id.bookmark:
                     bookmark();
+                    return true;
+                case R.id.setting:
+                    Intent intent = new Intent(this, SettingActivity.class);
+                    startActivityForResult(intent, SETTING_REQUEST_CODE);
                     return true;
             }
             return false;
@@ -566,7 +572,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 callback1 = callback;
                 origin1 = origin;
-                snackbar = Snackbar.make(webView, getString(R.string.allow)+" "+ origin + getString(R.string.allowGetLocation), Snackbar.LENGTH_INDEFINITE).setAction(R.string.allow, v -> {
+                snackbar = Snackbar.make(webView, getString(R.string.allow) + " " + origin + getString(R.string.allowGetLocation), Snackbar.LENGTH_INDEFINITE).setAction(R.string.allow, v -> {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
                     } else {
@@ -622,7 +628,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             String filename = url.substring(url.lastIndexOf('/') + 1);
             builder.setTitle(R.string.fileDownload);
-            builder.setMessage(R.string.isFileDownload + filename + " ？");
+            builder.setMessage(getString(R.string.isFileDownload) + filename + " ？");
             builder.setPositiveButton(R.string.submit, (dialog, which) -> {
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
                     downloadUrl = url;
@@ -697,7 +703,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     scanQRCode();
                     break;
                 default:
-                    webView.loadUrl(DEFAULT_HOME_PAGE);
+                    webView.loadUrl(homePage);
                     break;
             }
         }
@@ -720,6 +726,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         }
+        getSetting();
         LitePal.getDatabase();
         getVersion();
         initView();
@@ -727,6 +734,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         defaultUserAgent = webView.getSettings().getUserAgentString();
         initReceiver();
         load();
+    }
+
+    private void getSetting() {
+        SharedPreferences sharedPreferences = getSharedPreferences("setting", MODE_PRIVATE);
+        homePage = sharedPreferences.getString("home", DEFAULT_HOME_PAGE);
+        searchEngine=sharedPreferences.getString("search",DEFAULT_SEARCH_ENGINE);
     }
 
     @Override
@@ -792,7 +805,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     builder.setTitle(R.string.QRCodeInfo);
                     builder.setMessage(R.string.QRCodeInfoTip);
                     builder.setPositiveButton(R.string.submit, (dialog, which) -> {
-                        String html="<html><head><title>"+getString(R.string.QRCodeResult)+"</title></head><h3>"+getString(R.string.QRCodeResult)+"</h3>"+result+"</html>";
+                        String html = "<html><head><title>" + getString(R.string.QRCodeResult) + "</title></head><h3>" + getString(R.string.QRCodeResult) + "</h3>" + result + "</html>";
                         webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
                     });
                     builder.setNegativeButton(R.string.cancel, null);
@@ -818,6 +831,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String s = data.getStringExtra("url");
             if (s != null)
                 webView.loadUrl(s);
+        } else if (requestCode == SETTING_REQUEST_CODE && resultCode == RESULT_OK) {
+            assert data!=null;
+            boolean b=data.getBooleanExtra("isSettingChange",false);
+            if(b){
+                Snackbar.make(getCurrentFocus(),getString(R.string.applySetting),Snackbar.LENGTH_SHORT).show();
+                getSetting();
+            }
         }
     }
 

@@ -70,4 +70,15 @@
     <string name="QRCodeResult">识别结果</string>
     <string name="choicePic">选择图片</string>
     <string name="enterSiteTip">请输入网址或搜索内容</string>
+    <string name="setting">设置</string>
+    <string name="settingHp">设置主页</string>
+    <string name="inputWebsiteErro">网址输入有误</string>
+    <string name="applySetting">设置已应用</string>
+    <string name="settingHomeItem">主页</string>
+    <string name="settingSearchEngine">搜索引擎</string>
+    <string name="searchEngBaidu">百度</string>
+    <string name="searchEngSougou">搜狗</string>
+    <string name="searchEngBing">必应</string>
+    <string name="searchEngGoogle">谷歌</string>
+    <string name="searchEngOther">其他</string>
 </resources>

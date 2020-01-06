@@ -71,5 +71,16 @@
     <string name="QRCodeResult">Result</string>
     <string name="choicePic">Choice picture</string>
     <string name="enterSiteTip">Search or Enter URL</string>
+    <string name="setting">setting</string>
+    <string name="settingHp">Set Home Page</string>
+    <string name="inputWebsiteErro">Your input is not a website</string>
+    <string name="applySetting">Settings applied</string>
+    <string name="settingHomeItem">Home Page</string>
+    <string name="settingSearchEngine">Search Engine</string>
+    <string name="searchEngBaidu">Baidu</string>
+    <string name="searchEngSougou">Sogou</string>
+    <string name="searchEngBing">Bing</string>
+    <string name="searchEngGoogle">Google</string>
+    <string name="searchEngOther">Other</string>
 
 </resources>

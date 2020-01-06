@@ -63,4 +63,15 @@
     <string name="QRCodeResult">辨識結果</string>
     <string name="choicePic">選擇圖片</string>
     <string name="enterSiteTip">搜尋或輸入網址</string>
+    <string name="setting">設定</string>
+    <string name="settingHp">設定主頁</string>
+    <string name="inputWebsiteErro">網址輸入有誤</string>
+    <string name="applySetting">設定已應用</string>
+    <string name="settingHomeItem">主頁</string>
+    <string name="settingSearchEngine">搜索引擎</string>
+    <string name="searchEngSougou">搜狗</string>
+    <string name="searchEngBaidu">百度</string>
+    <string name="searchEngBing">必應</string>
+    <string name="searchEngGoogle">谷歌</string>
+    <string name="searchEngOther">自定義</string>
 </resources>

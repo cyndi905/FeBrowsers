@@ -17,6 +17,8 @@
         android:id="@+id/requestPCVersion"
         android:title="@string/requestPCVersion"
         android:checkable="true" />
+    <item android:id="@+id/setting"
+        android:title="@string/setting"/>
     <item
         android:id="@+id/about"
         android:title="@string/about" />
