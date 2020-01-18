@@ -5,6 +5,8 @@ import java.util.regex.Pattern;
 
 public class UrlUtil {
     public static boolean isUrl(String s){
+        if (s == null)
+            return false;
         String regex = "^((ftp|http|https|intent)?://)"                      // support scheme
                 + "?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?" // ftp的user@
                 + "(([0-9]{1,3}\\.){3}[0-9]{1,3}"                            // IP形式的URL -> 199.194.52.184

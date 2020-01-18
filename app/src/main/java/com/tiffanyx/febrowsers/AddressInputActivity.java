@@ -3,6 +3,7 @@ package com.tiffanyx.febrowsers;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -16,16 +17,29 @@ public class AddressInputActivity extends AppCompatActivity {
     private ImageButton imageButton;
 
     @Override
+    public void onBackPressed() {
+        finish();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_address_input);
         String url = getIntent().getStringExtra("url");
+        ImageButton button = findViewById(R.id.closeBtn);
+        button.setOnClickListener(v -> finish());
         editText = findViewById(R.id.addressTxv1);
         editText.setText(url);
         editText.selectAll();
         editText.setFocusable(true);
         editText.setFocusableInTouchMode(true);
         editText.requestFocus();
+        editText.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                returnResult();
+            }
+            return true;
+        });
         //显示软键盘
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         editText.setOnEditorActionListener((v, actionId, event) -> {

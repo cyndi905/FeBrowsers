@@ -8,8 +8,10 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
@@ -35,7 +37,9 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -43,6 +47,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -58,12 +63,16 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.tiffanyx.febrowsers.beans.Bookmark;
-import com.tiffanyx.febrowsers.js.InJavaScriptLocalObj;
 import com.tiffanyx.febrowsers.receiver.DownloadCompleteReceiver;
 import com.tiffanyx.febrowsers.util.Constant;
+import com.tiffanyx.febrowsers.util.HtmlUtil;
 import com.tiffanyx.febrowsers.util.UrlUtil;
 import com.tiffanyx.febrowsers.zxing.activity.CaptureActivity;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.litepal.LitePal;
 
 import java.io.File;
@@ -72,6 +81,7 @@ import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String homePage = "";
     private final String DEFAULT_HOME_PAGE = "https://m.baidu.com/?tn=simple#";
     private final String DEFAULT_SEARCH_ENGINE = "https://www.baidu.com/s?wd=";
-    private String searchEngine="";
+    private String searchEngine = "";
     private final static String OPEN_HOME_PAGE = "openHomePage";
     private final static String SCAN_QR_CODE = "scanQR";
     private String defaultUserAgent;
@@ -117,6 +127,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Timer timer = null;
     private Snackbar snackbar;
     private boolean isRequestPCVersion = false;
+    private FrameLayout fVideoLayout;
+    private View videoView;
+    private LinearLayout head, bottom;
+    private boolean isFullScreen = false;//是否手动设置全屏
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
         // 指定下载地址
@@ -278,6 +292,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {//实现2次返回键退出
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (isFullScreen) {
+                fullScreen();
+                isFullScreen = false;
+            }
+            if (videoView != null) {
+                hideVideoView();
+                webView.reload();
+                return false;
+            }
             if (webView.canGoBack()) {
                 webView.goBack();
             } else {
@@ -410,6 +433,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void fullScreen() {
+        isFullScreen = true;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设置全屏
+
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);//设置竖屏
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);//清除全屏
+        }
+    }
+
     //分享二维码创建
     public LinearLayout createQRCode() {
         LinearLayout linearLayout = new LinearLayout(getApplicationContext());
@@ -502,13 +537,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        webView.getSettings().setAllowFileAccess(true);
+        webView.setInitialScale(25);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setUseWideViewPort(true);
         webView.addJavascriptInterface(new InJavaScriptLocalObj(), "local_obj");
         webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);//允许http和https的混合连接，避免存在图片不加载的情况
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                view.loadUrl("javascript:window.local_obj.showSource('<head>'+" +
-                        "document.getElementsByTagName('html')[0].innerHTML+'</head>');");
+
+                view.loadUrl("javascript:window.local_obj.searchVideo('<head>'+" +
+                        "document.getElementsByTagName('html')[0].innerHTML+'</head>');" + "try{javascript:document.getElementsByClassName('" + HtmlUtil.getTagByUrl(url) + "')[0].addEventListener('click',function(){local_obj.fullscreen();return false;});}catch(err){}");
                 super.onPageFinished(view, url);
             }
 
@@ -518,6 +560,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return false;
                 }
                 try {
+                    Uri parsedUri = Uri.parse(url);
+                    PackageManager packageManager = getApplicationContext().getPackageManager();
+                    Intent browseIntent = new Intent(Intent.ACTION_VIEW).setData(parsedUri);
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         if (timer != null) {
                             timer.cancel();
@@ -532,18 +577,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         origin1 = null;
                         view.loadUrl(url);
                         return true;
-                    } else {
-                        Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-                        intent.addCategory(Intent.CATEGORY_BROWSABLE);
-                        intent.setComponent(null);
-                        intent.setSelector(null);
-                        startActivity(intent);
+                    }
+                    if (browseIntent.resolveActivity(packageManager) != null) {
+                        startActivity(browseIntent);
                         return true;
                     }
+                    if (url.startsWith("intent:")) {
+                        Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                        if (intent.resolveActivity(getApplicationContext().getPackageManager()) != null) {
+                            try {
+                                startActivity(intent);
+                            } catch (Exception e) {
+                                Toast.makeText(MainActivity.this, R.string.unsupportJump, Toast.LENGTH_SHORT).show();
+                            }
+                            return true;
+                        }
+                        Intent marketIntent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse("market://details?id=" + intent.getPackage()));
+                        if (marketIntent.resolveActivity(packageManager) != null) {
+                            startActivity(marketIntent);
+                            return true;
+                        }
+                        return true;
+                    }
+                    return true;
                 } catch (Exception e) {
                     isBlockScheme = true;
                     Toast.makeText(MainActivity.this, R.string.unsupportJump, Toast.LENGTH_SHORT).show();
-                    return true;
+                    return false;
                 }
             }
         });
@@ -605,6 +665,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                videoView = view;
+                fVideoLayout.setVisibility(View.VISIBLE);
+                fVideoLayout.addView(videoView);
+                fVideoLayout.bringToFront();
+                head.setVisibility(View.GONE);
+                bottom.setVisibility(View.GONE);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);//设置横屏
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设置全屏
+            }
+
+            @Override
+            public void onHideCustomView() {
+                hideVideoView();
+            }
+
+            @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 if (webView != null) {//判断webView是否为空，避免程序退出销毁webView时出现空指针错误
                     if (newProgress != 100) {
@@ -649,6 +726,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.getSettings().setSupportZoom(true);
     }
 
+    private void hideVideoView() {
+        //退出全屏
+        if (videoView == null) {
+            return;
+        }
+        //移除全屏视图并隐藏
+        fVideoLayout.removeView(videoView);
+        fVideoLayout.setVisibility(View.GONE);
+        head.setVisibility(View.VISIBLE);
+        bottom.setVisibility(View.VISIBLE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);//设置竖屏
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);//清除全屏
+        videoView = null;
+    }
+
     private void getVersion() {
         PackageManager pm = getPackageManager();
         PackageInfo packageInfo;
@@ -661,10 +753,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initView() {
+        head = findViewById(R.id.head);
+        bottom = findViewById(R.id.bottomNav);
         back = findViewById(R.id.back_ico_btn);
         forward = findViewById(R.id.forward_ico_btn);
         home = findViewById(R.id.home_ico_btn);
         more = findViewById(R.id.more_ico_btn);
+        fVideoLayout = findViewById(R.id.full_video);
         more.setOnClickListener(this);
         registerForContextMenu(more);
         ImageButton viewBtn = findViewById(R.id.play_ico_btn);
@@ -739,7 +834,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void getSetting() {
         SharedPreferences sharedPreferences = getSharedPreferences("setting", MODE_PRIVATE);
         homePage = sharedPreferences.getString("home", DEFAULT_HOME_PAGE);
-        searchEngine=sharedPreferences.getString("search",DEFAULT_SEARCH_ENGINE);
+        searchEngine = sharedPreferences.getString("search", DEFAULT_SEARCH_ENGINE);
     }
 
     @Override
@@ -832,10 +927,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (s != null)
                 webView.loadUrl(s);
         } else if (requestCode == SETTING_REQUEST_CODE && resultCode == RESULT_OK) {
-            assert data!=null;
-            boolean b=data.getBooleanExtra("isSettingChange",false);
-            if(b){
-                Snackbar.make(getCurrentFocus(),getString(R.string.applySetting),Snackbar.LENGTH_SHORT).show();
+            assert data != null;
+            boolean b = data.getBooleanExtra("isSettingChange", false);
+            if (b) {
+                Snackbar.make(getCurrentFocus(), getString(R.string.applySetting), Snackbar.LENGTH_SHORT).show();
                 getSetting();
             }
         }
@@ -921,4 +1016,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
+
+    public final class InJavaScriptLocalObj {
+        Document doc;
+
+        @JavascriptInterface
+        public void fullscreen() {
+            fullScreen();
+        }
+
+        @JavascriptInterface
+        public void searchVideo(String html) {
+            try {
+                doc = Jsoup.parse(html);
+                Elements elements = doc.getElementsByTag("video");
+                Element element = elements.get(0);
+                String s = element.attr("src");
+                if (s != null && !s.equals("")) {
+                    MainActivity.videoUrl = s;
+                } else {
+                    MainActivity.videoUrl = "";
+                }
+            } catch (Exception e) {
+                Log.e("myerror", e.getMessage());
+                MainActivity.videoUrl = "";
+            }
+
+        }
+
+    }
+
 }
