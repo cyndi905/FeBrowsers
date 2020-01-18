@@ -64,8 +64,8 @@
     <string name="submitPermissions">Allow</string>
     <string name="noCamPersmissions">We need your camera,otherwise we can\'t scan QRCode</string>
     <string name="noWriteStoragePermissions">We need write Storage Permissions,otherwise we can\'t download files</string>
-    <string name="noReadStoragePermissions">We need read storage permissions, otherwis we can\'t read files</string>
-    <string name="noFindVedio">Can\'t find vedio</string>
+    <string name="noReadStoragePermissions">We need read storage permissions, otherwise we can\'t read files</string>
+    <string name="noFindVedio">Can\'t find video</string>
     <string name="QRCodeInfo">View the QRCode content</string>
     <string name="QRCodeInfoTip">This isn\'t a website, you wanna get it information?</string>
     <string name="QRCodeResult">Result</string>
