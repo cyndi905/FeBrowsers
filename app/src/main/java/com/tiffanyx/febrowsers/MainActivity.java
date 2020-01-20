@@ -81,7 +81,6 @@ import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -446,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //分享二维码创建
-    public LinearLayout createQRCode() {
+    private LinearLayout createQRCode() {
         LinearLayout linearLayout = new LinearLayout(getApplicationContext());
         linearLayout.setGravity(Gravity.CENTER);
         final ImageView img = new ImageView(getApplicationContext());
@@ -538,8 +537,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
         webView.getSettings().setAllowFileAccess(true);
+        WebView.setWebContentsDebuggingEnabled(true);
         webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
-        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setAllowFileAccessFromFileURLs(true);
         webView.setInitialScale(25);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
@@ -548,7 +548,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-
                 view.loadUrl("javascript:window.local_obj.searchVideo('<head>'+" +
                         "document.getElementsByTagName('html')[0].innerHTML+'</head>');" + "try{javascript:document.getElementsByClassName('" + HtmlUtil.getTagByUrl(url) + "')[0].addEventListener('click',function(){local_obj.fullscreen();return false;});}catch(err){}");
                 super.onPageFinished(view, url);
@@ -561,7 +560,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 try {
                     Uri parsedUri = Uri.parse(url);
-                    PackageManager packageManager = getApplicationContext().getPackageManager();
+                    PackageManager packageManager = getPackageManager();
                     Intent browseIntent = new Intent(Intent.ACTION_VIEW).setData(parsedUri);
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         if (timer != null) {
@@ -584,7 +583,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     if (url.startsWith("intent:")) {
                         Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-                        if (intent.resolveActivity(getApplicationContext().getPackageManager()) != null) {
+                        if (intent.resolveActivity(packageManager) != null) {
                             try {
                                 startActivity(intent);
                             } catch (Exception e) {

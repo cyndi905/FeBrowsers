@@ -37,8 +37,9 @@ public class AddressInputActivity extends AppCompatActivity {
         editText.setOnKeyListener((v, keyCode, event) -> {
             if (keyCode == KeyEvent.KEYCODE_ENTER) {
                 returnResult();
+                return true;
             }
-            return true;
+            return false;
         });
         //显示软键盘
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
