@@ -23,7 +23,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_more_vert_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_close_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -33,12 +33,9 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="color" value="0c0c0c" />
-                            <entry key="height" value="40" />
-                            <entry key="outputName" value="ic_more_vert_black" />
-                            <entry key="overrideSize" value="true" />
+                            <entry key="color" value="c5c5c5" />
+                            <entry key="outputName" value="ic_close" />
                             <entry key="sourceFile" value="C:\Users\Administrator\Downloads\扫码.svg" />
-                            <entry key="width" value="40" />
                           </map>
                         </option>
                       </PersistentState>

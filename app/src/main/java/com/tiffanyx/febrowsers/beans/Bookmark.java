@@ -1,8 +1,8 @@
 package com.tiffanyx.febrowsers.beans;
 
-import org.litepal.crud.DataSupport;
+import org.litepal.crud.LitePalSupport;
 
-public class Bookmark extends DataSupport {
+public class Bookmark extends LitePalSupport {
     private int id;
     private String title;
     private String url;

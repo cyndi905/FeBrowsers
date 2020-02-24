@@ -11,7 +11,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
@@ -85,7 +86,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
         //ViewUtil.addTopView(getApplicationContext(), this, R.string.scan_card);
         CameraManager.init(getApplication());
 
-        viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_content);
+        viewfinderView = findViewById(R.id.viewfinder_content);
 //        back = (ImageButton) findViewById(R.id.btn_back);
 //        back.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -94,10 +95,10 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 //            }
 //        });
 
-        btnFlash = (ImageButton) findViewById(R.id.btn_flash);
+        btnFlash = findViewById(R.id.btn_flash);
         btnFlash.setOnClickListener(flashListener);
 
-        btnAlbum = (Button) findViewById(R.id.btn_album);
+        btnAlbum = findViewById(R.id.btn_album);
         btnAlbum.setOnClickListener(albumOnClick);
 
 //		cancelScanButton = (Button) this.findViewById(R.id.btn_cancel_scan);
@@ -195,7 +196,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     @Override
     protected void onResume() {
         super.onResume();
-        SurfaceView surfaceView = (SurfaceView) findViewById(R.id.scanner_view);
+        SurfaceView surfaceView = findViewById(R.id.scanner_view);
         SurfaceHolder surfaceHolder = surfaceView.getHolder();
         if (hasSurface) {
             initCamera(surfaceHolder);

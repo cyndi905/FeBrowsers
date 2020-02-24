@@ -1,13 +1,13 @@
 package com.tiffanyx.febrowsers;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,18 +58,23 @@ public class SettingActivity extends AppCompatActivity {
             key= (String) it.next();
             Log.e("m",searchEngines.get(key));
             if(searchEngines.get(key).equals(se)){
-                if(key.equals("baidu")){
-                    searchEngName=getString(R.string.searchEngBaidu);
-                    searchCheckedItem=1;
-                }else if (key.equals("sougou")){
-                    searchEngName=getString(R.string.searchEngSougou);
-                    searchCheckedItem=3;
-                }else if (key.equals("bing")){
-                    searchEngName=getString(R.string.searchEngBing);
-                    searchCheckedItem=2;
-                }else {
-                    searchEngName=getString(R.string.searchEngGoogle);
-                    searchCheckedItem=0;
+                switch (key) {
+                    case "baidu":
+                        searchEngName = getString(R.string.searchEngBaidu);
+                        searchCheckedItem = 1;
+                        break;
+                    case "sougou":
+                        searchEngName = getString(R.string.searchEngSougou);
+                        searchCheckedItem = 3;
+                        break;
+                    case "bing":
+                        searchEngName = getString(R.string.searchEngBing);
+                        searchCheckedItem = 2;
+                        break;
+                    default:
+                        searchEngName = getString(R.string.searchEngGoogle);
+                        searchCheckedItem = 0;
+                        break;
                 }
             }
         }
@@ -120,28 +125,28 @@ public class SettingActivity extends AppCompatActivity {
                         switch (which){
                             case 0:
                                 searchCheckedItem=0;
-                                sharedPreferences.edit().putString("search",(String) searchEngines.get("google")).commit();
+                                sharedPreferences.edit().putString("search", searchEngines.get("google")).commit();
                                 lists.get(1).put("itemContent",getString(R.string.searchEngGoogle));
                                 simpleAdapter.notifyDataSetChanged();
                                 isSettingChange=true;
                                 break;
                             case 1:
                                 searchCheckedItem=1;
-                                sharedPreferences.edit().putString("search",(String) searchEngines.get("baidu")).commit();
+                                sharedPreferences.edit().putString("search", searchEngines.get("baidu")).commit();
                                 lists.get(1).put("itemContent",getString(R.string.searchEngBaidu));
                                 simpleAdapter.notifyDataSetChanged();
                                 isSettingChange=true;
                                 break;
                             case 3:
                                 searchCheckedItem=3;
-                                sharedPreferences.edit().putString("search",(String) searchEngines.get("sougou")).commit();
+                                sharedPreferences.edit().putString("search", searchEngines.get("sougou")).commit();
                                 lists.get(1).put("itemContent",getString(R.string.searchEngSougou));
                                 simpleAdapter.notifyDataSetChanged();
                                 isSettingChange=true;
                                 break;
                             case 2:
                                 searchCheckedItem=3;
-                                sharedPreferences.edit().putString("search",(String) searchEngines.get("bing")).commit();
+                                sharedPreferences.edit().putString("search", searchEngines.get("bing")).commit();
                                 lists.get(1).put("itemContent",getString(R.string.searchEngBing));
                                 simpleAdapter.notifyDataSetChanged();
                                 isSettingChange=true;
@@ -155,10 +160,8 @@ public class SettingActivity extends AppCompatActivity {
                                 AlertDialog.Builder builder2=new AlertDialog.Builder(this).setView(v).setPositiveButton(R.string.submit, (dialog1, which1) -> {
                                     String s=editText.getText().toString();
                                     if(!s.equals("")){
-                                        StringBuffer buffer=new StringBuffer();
-                                        buffer.append("http://");
-                                        buffer.append(s);
-                                        s=buffer.toString();
+                                        String buffer = "http://" + s;
+                                        s = buffer;
                                         if(UrlUtil.isUrl(s.trim())){
                                             sharedPreferences.edit().putString("search",s).commit();
                                             searchCheckedItem=4;

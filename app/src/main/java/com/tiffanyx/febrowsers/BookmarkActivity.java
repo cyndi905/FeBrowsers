@@ -1,12 +1,12 @@
 package com.tiffanyx.febrowsers;
 
 import android.content.Intent;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,9 +19,8 @@ import android.widget.Toast;
 import com.tiffanyx.febrowsers.adapter.BookmarkAdapter;
 import com.tiffanyx.febrowsers.beans.Bookmark;
 
-import org.litepal.crud.DataSupport;
+import org.litepal.LitePal;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BookmarkActivity extends AppCompatActivity {
@@ -45,7 +44,7 @@ public class BookmarkActivity extends AppCompatActivity {
             bar.setDisplayHomeAsUpEnabled(true);
         }
         registerForContextMenu(listView);
-        bookmarks = DataSupport.findAll(Bookmark.class);
+        bookmarks = LitePal.findAll(Bookmark.class);
         if (bookmarks.size() == 0) {
             setContentView(R.layout.no_bookmark);
         } else {
@@ -68,8 +67,6 @@ public class BookmarkActivity extends AppCompatActivity {
                 this.finish();
                 return true;
             case R.id.del:
-                return true;
-            case R.id.selectAllOrNot:
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -110,7 +107,7 @@ public class BookmarkActivity extends AppCompatActivity {
                 }).setNegativeButton(R.string.cancel, null).show();
                 break;
             case R.id.del_item:
-                int i = DataSupport.deleteAll(Bookmark.class, "id=?", String.valueOf(bookmarks.get(item_id).getId()));
+                int i = LitePal.deleteAll(Bookmark.class, "id=?", String.valueOf(bookmarks.get(item_id).getId()));
                 if (i > 0) {
                     bookmarks.remove(item_id);
                     adapter.notifyDataSetChanged();

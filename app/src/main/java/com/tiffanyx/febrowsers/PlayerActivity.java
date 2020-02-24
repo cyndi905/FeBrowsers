@@ -1,6 +1,6 @@
 package com.tiffanyx.febrowsers;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -24,6 +24,7 @@ public class PlayerActivity extends AppCompatActivity {
         decorView.setSystemUiVisibility(uiOptions);
         JzvdStd jzvdStd = findViewById(R.id.player);
         jzvdStd.setUp(url, title);
+
     }
 
     @Override
@@ -36,6 +37,6 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        Jzvd.resetAllVideos();
+        Jzvd.releaseAllVideos();
     }
 }
