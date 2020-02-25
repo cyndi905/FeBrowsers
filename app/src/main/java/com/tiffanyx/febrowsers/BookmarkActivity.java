@@ -89,7 +89,7 @@ public class BookmarkActivity extends AppCompatActivity {
                 final EditText urlEdt = layout.findViewById(R.id.bookmarkUrl);
                 titleEdt.setText(bookmarks.get(item_id).getTitle());
                 urlEdt.setText(bookmarks.get(item_id).getUrl());
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Dialog_Alert);
                 builder.setTitle(R.string.addBookmarkTitle).setView(layout).setPositiveButton(R.string.submit, (dialog, which) -> {
                     String title = titleEdt.getText().toString();
                     String url = urlEdt.getText().toString();

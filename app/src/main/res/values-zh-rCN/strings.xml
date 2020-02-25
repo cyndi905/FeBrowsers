@@ -81,4 +81,8 @@
     <string name="searchEngBing">必应</string>
     <string name="searchEngGoogle">谷歌</string>
     <string name="searchEngOther">其他</string>
+    <string name="enableWebViewDark">网页夜间模式（实验功能）</string>
+    <string name="DarkModeWebTvEnable">开启</string>
+    <string name="DarkModeWebTvDisable">关闭</string>
+    <string name="enableWebViewDarkTip">开启该功能可能会影响网页内容的显示</string>
 </resources>

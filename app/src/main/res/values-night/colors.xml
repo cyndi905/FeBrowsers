@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#212a2f</color>
+    <color name="colorPrimaryDark">#35464e</color>
+    <color name="colorAccent">#7E7E7D</color>
+    <color name="colorPrimaryBottomNav">#212a2f</color>
+    <color name="colorSettingTitleTx">#fff</color>
+    <color name="colorPrimaryIco">#7E7E7D</color>
+    <color name="colorPrimaryTopNavToI">#7E7E7D</color>
+    <color name="popMenuBg">#303030</color>
+    <color name="popMenuTextColor">#fff</color>
+</resources>

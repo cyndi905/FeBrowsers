@@ -82,5 +82,9 @@
     <string name="searchEngBing">Bing</string>
     <string name="searchEngGoogle">Google</string>
     <string name="searchEngOther">Other</string>
+    <string name="enableWebViewDark">Dark Mode for Web Contents (testing)</string>
+    <string name="DarkModeWebTvEnable">Enable</string>
+    <string name="DarkModeWebTvDisable">Disable</string>
+    <string name="enableWebViewDarkTip">It might affect the display of web content</string>
 
 </resources>

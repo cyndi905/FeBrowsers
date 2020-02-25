@@ -3,11 +3,6 @@ package com.tiffanyx.febrowsers;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +11,12 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.tiffanyx.febrowsers.util.UrlUtil;
 
 import java.util.ArrayList;
@@ -30,14 +31,16 @@ public class SettingActivity extends AppCompatActivity {
     private boolean isSettingChange=false;
     private Map<String,String> searchEngines=new HashMap<>();
     private int searchCheckedItem=4;
+    private int darkWebCheckedItem = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
-        String[] settingItems = {getString(R.string.settingHomeItem),getString(R.string.settingSearchEngine)};
+        String[] settingItems = {getString(R.string.settingHomeItem), getString(R.string.settingSearchEngine), getString(R.string.enableWebViewDark)};
         setTitle(getString(R.string.setting));
         String[] ses=new String[]{getString(R.string.searchEngGoogle),getString(R.string.searchEngBaidu),getString(R.string.searchEngBing),getString(R.string.searchEngSougou),getString(R.string.searchEngOther)};
+        String[] ed = new String[]{getString(R.string.DarkModeWebTvEnable), getString(R.string.DarkModeWebTvDisable)};
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null){
             actionBar.setHomeButtonEnabled(true);
@@ -49,11 +52,16 @@ public class SettingActivity extends AppCompatActivity {
         searchEngines.put("google","https://www.google.com/search?q=");
         Iterator it = searchEngines.keySet().iterator();
         String key = null;
-        String value = null;
         String searchEngName=getString(R.string.searchEngOther);
         SharedPreferences sharedPreferences=getSharedPreferences("setting",MODE_PRIVATE);
         String hp=sharedPreferences.getString("home","https://m.baidu.com/?tn=simple#");
         String se=sharedPreferences.getString("search",searchEngines.get("baidu"));
+        boolean webViewDark = sharedPreferences.getBoolean("enableWebViewDark", false);
+        String wd = getString(R.string.DarkModeWebTvDisable);
+        if (webViewDark) {
+            wd = getString(R.string.DarkModeWebTvEnable);
+            darkWebCheckedItem = 0;
+        }
         while (it.hasNext()){
             key= (String) it.next();
             Log.e("m",searchEngines.get(key));
@@ -80,6 +88,7 @@ public class SettingActivity extends AppCompatActivity {
         }
         content.add(hp);
         content.add(searchEngName);
+        content.add(wd);
         ListView lv=findViewById(R.id.settingLv);
         for (int i=0;i<settingItems.length;i++){
             HashMap<String,Object> hashMap=new HashMap<>();
@@ -95,7 +104,7 @@ public class SettingActivity extends AppCompatActivity {
                     final View layout = getLayoutInflater().inflate(R.layout.setting_hompage, null);
                     final EditText homeEdt = layout.findViewById(R.id.homePageEdt);
                     homeEdt.setText(hp);
-                    AlertDialog.Builder builder=new AlertDialog.Builder(SettingActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(SettingActivity.this, R.style.Dialog_Alert);
                     builder.setTitle(getString(R.string.settingHp)).setNegativeButton(R.string.cancel,null).setPositiveButton(R.string.submit, (dialog, which) -> {
                         String h=homeEdt.getText().toString();
                         if(!h.equals("")){
@@ -121,7 +130,7 @@ public class SettingActivity extends AppCompatActivity {
                     }).setView(layout).show();
                     break;
                 case 1:
-                    AlertDialog.Builder builder1=new AlertDialog.Builder(this).setTitle(R.string.settingSearchEngine).setSingleChoiceItems(ses, searchCheckedItem, (dialog, which) -> {
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(this, R.style.Dialog_Alert).setTitle(R.string.settingSearchEngine).setSingleChoiceItems(ses, searchCheckedItem, (dialog, which) -> {
                         switch (which){
                             case 0:
                                 searchCheckedItem=0;
@@ -157,7 +166,7 @@ public class SettingActivity extends AppCompatActivity {
                                 if(searchCheckedItem==4){
                                     editText.setText(sharedPreferences.getString("search",""));
                                 }
-                                AlertDialog.Builder builder2=new AlertDialog.Builder(this).setView(v).setPositiveButton(R.string.submit, (dialog1, which1) -> {
+                                AlertDialog.Builder builder2 = new AlertDialog.Builder(this, R.style.Dialog_Alert).setView(v).setPositiveButton(R.string.submit, (dialog1, which1) -> {
                                     String s=editText.getText().toString();
                                     if(!s.equals("")){
                                         String buffer = "http://" + s;
@@ -177,9 +186,36 @@ public class SettingActivity extends AppCompatActivity {
                                 }).setTitle(R.string.searchEngOther);
                                 builder2.show();
                                 break;
+
                         }
+
                     });
                     builder1.show();
+                    break;
+                case 2:
+                    AlertDialog dial = null;
+                    AlertDialog.Builder builder11 = new AlertDialog.Builder(this, R.style.Dialog_Alert).setTitle(R.string.enableWebViewDark).setSingleChoiceItems(ed, darkWebCheckedItem, (dialog, which) -> {
+                        switch (which) {
+                            case 0:
+                                sharedPreferences.edit().putBoolean("enableWebViewDark", true).commit();
+                                darkWebCheckedItem = 0;
+                                lists.get(2).put("itemContent", getString(R.string.DarkModeWebTvEnable));
+                                simpleAdapter.notifyDataSetChanged();
+                                isSettingChange = true;
+                                Toast.makeText(getApplicationContext(), getString(R.string.enableWebViewDarkTip), Toast.LENGTH_LONG).show();
+                                break;
+                            case 1:
+                                sharedPreferences.edit().putBoolean("enableWebViewDark", false).commit();
+                                darkWebCheckedItem = 1;
+                                lists.get(2).put("itemContent", getString(R.string.DarkModeWebTvDisable));
+                                simpleAdapter.notifyDataSetChanged();
+                                isSettingChange = true;
+                                break;
+                        }
+                        if (dialog != null)
+                            dialog.dismiss();
+                    });
+                    dial = builder11.show();
                     break;
             }
         });

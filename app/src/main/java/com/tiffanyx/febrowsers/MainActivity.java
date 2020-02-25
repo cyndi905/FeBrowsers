@@ -19,21 +19,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -58,8 +47,19 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.webkit.WebViewCompat;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.FutureTarget;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -80,7 +80,9 @@ import org.litepal.LitePal;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.Hashtable;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -133,6 +135,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private View videoView;
     private LinearLayout head, bottom;
     private boolean isFullScreen = false;//是否手动设置全屏
+    private String dayCode;//白天css
+    private String nightCode;//黑夜css
+    private boolean isNightMode = false;
+    private PopupMenu popupMenu = null;
+    private boolean isRequestOrientation = false;//用于防止更改屏幕水平模式时重新创建界面
+    private boolean isEnableWebViewDarkMode = false;
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
         // 指定下载地址
@@ -161,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        request.setDestinationInExternalFilesDir()
         final DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         // 添加一个下载任务
+        assert downloadManager != null;
         downloadManager.enqueue(request);
         Toast.makeText(MainActivity.this, R.string.beginDownload, Toast.LENGTH_SHORT).show();
     }
@@ -200,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Pattern pattern = Pattern.compile("Mozilla/5.0 (.*) A");
         Matcher matcher = pattern.matcher(str);
         if (matcher.find()) {
-            webView.getSettings().setUserAgentString(str.replace(matcher.group(1), insertStr));
+            webView.getSettings().setUserAgentString(str.replace(Objects.requireNonNull(matcher.group(1)), insertStr));
         }
         webView.reload();
     }
@@ -265,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void showAbout() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Dialog_Alert);
         builder.setTitle(R.string.aboutBrowser);
         builder.setIcon(R.mipmap.ic_launcher_round);
         builder.setMessage(getString(R.string.app_name) + version + getString(R.string.appInfo));
@@ -274,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void exit() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Dialog_Alert);
         builder.setTitle(R.string.exitApp);
         builder.setMessage(R.string.exitAppTip);
         builder.setPositiveButton(R.string.exitConfirm, (dialog, which) -> finish());
@@ -284,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void share() {
         View view = createQRCode();
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Dialog_Alert);
         builder.setView(view);
         builder.setMessage(webView.getTitle());
         builder.setPositiveButton(R.string.submit, null);
@@ -319,7 +328,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void showPopupMenu(View v) {
+        if (this.popupMenu != null) {
+            popupMenu.dismiss();
+        }
         PopupMenu popupMenu = new PopupMenu(this, v);
+        this.popupMenu = popupMenu;
         popupMenu.inflate(R.menu.menu);
         popupMenu.getMenu().getItem(5).setChecked(isRequestPCVersion);
         popupMenu.setOnMenuItemClickListener(menuItem -> {
@@ -356,6 +369,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return false;
         });
         popupMenu.show();
+        this.popupMenu = null;
+
     }
 
     private void bookmark() {
@@ -368,13 +383,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bookmark.setTitle(webView.getTitle());
         bookmark.setUrl(webView.getUrl());
         if (bookmark.save()) {
-            final View layout = getLayoutInflater().inflate(R.layout.edit_bookmark_layout, null);
+            @SuppressLint("InflateParams") final View layout = getLayoutInflater().inflate(R.layout.edit_bookmark_layout, null);
             final EditText titleEdt = layout.findViewById(R.id.bookmarkTitle);
             final EditText urlEdt = layout.findViewById(R.id.bookmarkUrl);
             titleEdt.setText(bookmark.getTitle());
             urlEdt.setText(bookmark.getUrl());
             Snackbar.make(v, R.string.addBookmarkSucc, Snackbar.LENGTH_LONG).setAction(R.string.edit, v1 -> {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Dialog_Alert);
                 builder.setTitle(R.string.addBookmarkTitle).setView(layout).setPositiveButton(R.string.submit, (dialog, which) -> {
                     String title = titleEdt.getText().toString();
                     String url = urlEdt.getText().toString();
@@ -435,14 +450,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @SuppressLint("SourceLockedOrientationActivity")
     private void fullScreen() {
         isFullScreen = true;
+        isRequestOrientation = true;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设置全屏
-
         } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);//设置竖屏
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);//释放播放视频强制横屏
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);//清除全屏
         }
     }
@@ -472,7 +488,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (bitMatrix.get(x, y)) {
                             pixels[y * w + x] = 0xff000000;
                         } else {
-                            pixels[y * w + x] = 0xffffffff;
+                            if (isNightMode)
+                                pixels[y * w + x] = 0x00000000;
+                            else
+                                pixels[y * w + x] = 0xffffffff;
                         }
                     }
                 }
@@ -501,7 +520,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
         } catch (Exception e) {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.savePicFailed, Toast.LENGTH_SHORT).show());
-            Log.e("myerror", e.getMessage());
+            Log.e("myerror", Objects.requireNonNull(e.getMessage()));
         } finally {
             try {
                 assert fos != null;
@@ -521,8 +540,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String url = hitTestResult.getExtra();
                     Drawable drawable = target.get();
                     if (url != null) {
-                        int i = url.lastIndexOf(".");
-                        save2Album(drawable2Bitmap(drawable), UUID.randomUUID().toString() + "." + url.substring((i + 1)));
+                        url = url.toUpperCase();
+                        String suffix = "png";
+                        if (url.contains("JPEG") || url.contains("JPG"))
+                            suffix = "jpg";
+                        save2Album(drawable2Bitmap(drawable), UUID.randomUUID().toString() + "." + suffix);
                     } else {
                         Toast.makeText(MainActivity.this, R.string.downloadFailed, Toast.LENGTH_LONG).show();
                     }
@@ -551,9 +573,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
                 view.loadUrl("javascript:window.local_obj.searchVideo('<head>'+" +
                         "document.getElementsByTagName('html')[0].innerHTML+'</head>');" + "try{javascript:document.getElementsByClassName('" + HtmlUtil.getTagByUrl(url) + "')[0].addEventListener('click',function(){local_obj.fullscreen();return false;});}catch(err){}");
-                super.onPageFinished(view, url);
+                if (isNightMode && isEnableWebViewDarkMode) {
+                    changeWebViewMode(true);
+                    webView.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
@@ -614,7 +640,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             final WebView.HitTestResult hitTestResult = webView.getHitTestResult();
             // 如果是图片类型或者是带有图片链接的类型
             if (hitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE || hitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Dialog_Alert);
                 builder.setItems(new String[]{getString(R.string.download_pic)}, (dialogInterface, i) -> {
                             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
                                 //申请权限
@@ -666,8 +692,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
             }
 
+            @SuppressLint("SourceLockedOrientationActivity")
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
+                isRequestOrientation = true;
                 videoView = view;
                 fVideoLayout.setVisibility(View.VISIBLE);
                 fVideoLayout.addView(videoView);
@@ -687,6 +715,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onProgressChanged(WebView view, int newProgress) {
                 if (webView != null) {//判断webView是否为空，避免程序退出销毁webView时出现空指针错误
                     if (newProgress != 100) {
+                        if (isNightMode && isEnableWebViewDarkMode) {
+                            webView.setVisibility(View.INVISIBLE);
+                        }
                         canRefresh = false;
                         addressTxv.setHint(R.string.loading);
                         stopOrRefresh.setBackgroundResource(R.drawable.ic_action_stop);
@@ -704,7 +735,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {//开启下载功能
             //显示是否下载的dialog
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Dialog_Alert);
             String filename = url.substring(url.lastIndexOf('/') + 1);
             builder.setTitle(R.string.fileDownload);
             builder.setMessage(getString(R.string.isFileDownload) + filename + " ？");
@@ -728,7 +759,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         webView.getSettings().setSupportZoom(true);
     }
 
+    @SuppressLint("SourceLockedOrientationActivity")
     private void hideVideoView() {
+        isRequestOrientation = true;
         //退出全屏
         if (videoView == null) {
             return;
@@ -738,7 +771,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fVideoLayout.setVisibility(View.GONE);
         head.setVisibility(View.VISIBLE);
         bottom.setVisibility(View.VISIBLE);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);//设置竖屏
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);//释放播放视频强制横屏
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);//清除全屏
         videoView = null;
     }
@@ -807,6 +840,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        if (isRequestOrientation) {
+            isRequestOrientation = false;
+            return;
+        }
+        switch (currentNightMode) {
+            case Configuration.UI_MODE_NIGHT_NO:
+                // Night mode is not active, we're using the light theme
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                recreate();
+                isNightMode = false;
+                changeWebViewMode(false);
+                break;
+            case Configuration.UI_MODE_NIGHT_YES:
+                // Night mode is active, we're using dark theme
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                recreate();
+                isNightMode = true;
+                changeWebViewMode(true);
+                break;
+        }
+
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         getDataFromBrowser(intent);
@@ -816,27 +876,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initDayNightMode();
         getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary, null));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (WebView.getCurrentWebViewPackage() == null) {
-                Toast.makeText(this, R.string.deviceNotWebview, Toast.LENGTH_LONG).show();
-                finish();
-            }
+        if (WebViewCompat.getCurrentWebViewPackage(this) == null) {
+            Toast.makeText(this, R.string.deviceNotWebview, Toast.LENGTH_LONG).show();
+            finish();
         }
-        LitePal.initialize(this);
+        LitePal.initialize(this);//启动数据库
         getSetting();
         getVersion();
         initView();
         initWebView();
-        defaultUserAgent = webView.getSettings().getUserAgentString();
+        defaultUserAgent = webView.getSettings().getUserAgentString();//取得原始用户代理，用于复原代理
         initReceiver();
         load();
+    }
+
+    private void initDayNightMode() {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES) {
+            isNightMode = true;
+        }
     }
 
     private void getSetting() {
         SharedPreferences sharedPreferences = getSharedPreferences("setting", MODE_PRIVATE);
         homePage = sharedPreferences.getString("home", DEFAULT_HOME_PAGE);
         searchEngine = sharedPreferences.getString("search", DEFAULT_SEARCH_ENGINE);
+        try {
+            if (isEnableWebViewDarkMode != (isEnableWebViewDarkMode = sharedPreferences.getBoolean("enableWebViewDark", false))) {
+                if (isEnableWebViewDarkMode) {
+                    changeWebViewMode(true);
+                } else {
+                    webView.reload();
+                }
+            }
+        } catch (Exception e) {
+        }
     }
 
     @Override
@@ -848,7 +924,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Intent intent = new Intent(getApplicationContext(), CaptureActivity.class);
                     startActivityForResult(intent, 100);
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Dialog_Alert);
                     builder.setTitle(R.string.noPermissions).setMessage(R.string.noCamPersmissions).setPositiveButton(R.string.submitPermissions, (dialogInterface, i) -> requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA)).setNegativeButton(R.string.cancel, null).show();
                 }
                 break;
@@ -862,7 +938,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         savePic();
                     }
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Dialog_Alert);
                     builder.setTitle(R.string.noPermissions).setMessage(R.string.noWriteStoragePermissions).setPositiveButton(R.string.submitPermissions, (dialog, which) -> requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE)).setNegativeButton(R.string.cancel, null).show();
                 }
                 break;
@@ -871,7 +947,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (grantResults[0] == PERMISSION_GRANTED) {//已授权
                     openImageChooserActivity();
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Dialog_Alert);
                     builder.setTitle(R.string.noPermissions).setMessage(R.string.noReadStoragePermissions).setPositiveButton(R.string.submitPermissions, (dialogInterface, i) -> requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE)).setNegativeButton(R.string.cancel, null).show();
                 }
                 break;
@@ -895,10 +971,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (requestCode == 100 && resultCode == RESULT_OK) {
             if (data != null) {
                 String result = data.getStringExtra(Constant.INTENT_EXTRA_KEY_QR_SCAN);
+                assert result != null;
                 if (result.startsWith("http://") || result.startsWith("https://")) {
                     webView.loadUrl(result);
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Dialog_Alert);
                     builder.setTitle(R.string.QRCodeInfo);
                     builder.setMessage(R.string.QRCodeInfoTip);
                     builder.setPositiveButton(R.string.submit, (dialog, which) -> {
@@ -932,8 +1009,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             assert data != null;
             boolean b = data.getBooleanExtra("isSettingChange", false);
             if (b) {
-                Snackbar.make(getCurrentFocus(), getString(R.string.applySetting), Snackbar.LENGTH_SHORT).show();
                 getSetting();
+                Snackbar.make(webView, getString(R.string.applySetting), Snackbar.LENGTH_SHORT).show();
             }
         }
     }
@@ -1007,6 +1084,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    public void changeWebViewMode(boolean isNight) {
+        try {
+            if (isNight) {
+                if (nightCode == null) {
+                    InputStream is = getResources().openRawResource(R.raw.night);
+                    byte[] buffer = new byte[is.available()];
+                    is.read(buffer);
+                    is.close();
+                    nightCode = Base64.encodeToString(buffer, Base64.NO_WRAP);
+                }
+                webView.loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);" + "var style = document.createElement('style');" + "style.type = 'text/css';" + "style.innerHTML = window.atob('" + nightCode + "');" + "parent.appendChild(style)" + "})();");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void playVideo() {
         if (videoUrl != null && !videoUrl.equals("")) {
             Intent intent = new Intent(this, PlayerActivity.class);
@@ -1040,12 +1134,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     MainActivity.videoUrl = "";
                 }
             } catch (Exception e) {
-                Log.e("myerror", e.getMessage());
+                Log.e("myerror", Objects.requireNonNull(e.getMessage()));
                 MainActivity.videoUrl = "";
             }
-
         }
-
     }
-
 }

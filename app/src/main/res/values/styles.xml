@@ -2,17 +2,32 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:popupMenuStyle">@style/popMenuStyle</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/popMenuText</item>
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-    <style name="AppTheme1" parent="Theme.AppCompat.Light.DarkActionBar">
+
+    <style name="AppTheme1" parent="Theme.AppCompat.DayNight">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:titleTextColor">@android:color/white</item>
+    </style>
+
+    <style name="Dialog.Alert" parent="Theme.AppCompat.DayNight.Dialog.Alert" />
+
+    <style name="popMenuStyle" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/pop_menu_bg</item><!-- popMenu的背景色-->
+    </style>
+
+    <style name="popMenuText" parent="">
+        <item name="android:textColor">@color/popMenuTextColor</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:gravity">center</item>
     </style>
 
 </resources>
