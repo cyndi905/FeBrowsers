@@ -9,6 +9,7 @@
     <color name="colorPrimaryTopNavToI">#fff</color>
     <color name="popMenuBg">#fff</color>
     <color name="popMenuTextColor">#000</color>
+    <color name="settingTitleTextColor">#fff</color>
     <!-- QRCode scanner color begin -->
     <color name="viewfinder_mask">#60000000</color>
     <color name="result_view">#B0000000</color>

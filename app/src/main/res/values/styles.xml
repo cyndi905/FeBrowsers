@@ -15,7 +15,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:titleTextColor">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/settingTitleTextColor</item>
     </style>
 
     <style name="Dialog.Alert" parent="Theme.AppCompat.DayNight.Dialog.Alert" />

@@ -16,7 +16,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.tiffanyx.febrowsers.util.UrlUtil;
 
 import java.util.ArrayList;

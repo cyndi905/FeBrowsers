@@ -54,7 +54,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebViewCompat;
 
 import com.bumptech.glide.Glide;
@@ -119,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar progressBar;
     private WebView webView;
     private long pressBackStartTime = 0;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private ImageButton stopOrRefresh;
     private EditText addressTxv;
     private boolean canRefresh;
@@ -135,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private View videoView;
     private LinearLayout head, bottom;
     private boolean isFullScreen = false;//是否手动设置全屏
-    private String dayCode;//白天css
     private String nightCode;//黑夜css
     private boolean isNightMode = false;
     private PopupMenu popupMenu = null;
@@ -262,7 +259,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void refresh() {
-        swipeRefreshLayout.setRefreshing(true);
         webView.reload();
     }
 
@@ -728,7 +724,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         addressTxv.setHint(webView.getTitle());
                         stopOrRefresh.setBackgroundResource(R.drawable.ic_refresh);
                         progressBar.setVisibility(View.GONE);
-                        swipeRefreshLayout.setRefreshing(false);
                     }
                 }
             }
@@ -807,11 +802,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         stopOrRefresh.setOnClickListener(this);
         progressBar = findViewById(R.id.progressBar);
         addressTxv.setOnClickListener(this);
-        swipeRefreshLayout = findViewById(R.id.srl);
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            String url = webView.getUrl();
-            webView.loadUrl(url);
-        });
     }
 
     private void initReceiver() {
@@ -911,7 +901,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     webView.reload();
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 

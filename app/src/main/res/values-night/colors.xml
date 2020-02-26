@@ -9,4 +9,5 @@
     <color name="colorPrimaryTopNavToI">#7E7E7D</color>
     <color name="popMenuBg">#303030</color>
     <color name="popMenuTextColor">#fff</color>
+    <color name="settingTitleTextColor">#fff</color>
 </resources>
