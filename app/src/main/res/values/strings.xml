@@ -86,5 +86,6 @@
     <string name="DarkModeWebTvEnable">Enable</string>
     <string name="DarkModeWebTvDisable">Disable</string>
     <string name="enableWebViewDarkTip">It might affect the display of web content</string>
+    <string name="networkDisableTip">Your device is offline.</string>
 
 </resources>

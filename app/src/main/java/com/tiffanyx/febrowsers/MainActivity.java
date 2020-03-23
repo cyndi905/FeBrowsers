@@ -19,8 +19,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -68,6 +70,7 @@ import com.tiffanyx.febrowsers.beans.Bookmark;
 import com.tiffanyx.febrowsers.receiver.DownloadCompleteReceiver;
 import com.tiffanyx.febrowsers.util.Constant;
 import com.tiffanyx.febrowsers.util.HtmlUtil;
+import com.tiffanyx.febrowsers.util.NetworkStatusUtil;
 import com.tiffanyx.febrowsers.util.UrlUtil;
 import com.tiffanyx.febrowsers.zxing.activity.CaptureActivity;
 
@@ -561,7 +564,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         WebView.setWebContentsDebuggingEnabled(true);
         webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
         webView.getSettings().setAllowFileAccessFromFileURLs(true);
-        webView.setInitialScale(25);
+//        webView.setInitialScale(25);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
         webView.addJavascriptInterface(new InJavaScriptLocalObj(), "local_obj");
@@ -879,7 +882,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initWebView();
         defaultUserAgent = webView.getSettings().getUserAgentString();//取得原始用户代理，用于复原代理
         initReceiver();
+        checkNetwork();
         load();
+    }
+
+    private void checkNetwork() {
+        if (!NetworkStatusUtil.isNetworkEnable(getApplicationContext())) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Toast.makeText(getApplicationContext(), R.string.networkDisableTip, Toast.LENGTH_LONG).show();
+                Intent panelIntent = new Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY);
+                startActivityForResult(panelIntent, 0);
+            }
+        }
     }
 
     private void initDayNightMode() {

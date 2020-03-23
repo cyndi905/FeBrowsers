@@ -78,4 +78,5 @@
     <string name="DarkModeWebTvEnable">開啟</string>
     <string name="DarkModeWebTvDisable">關閉</string>
     <string name="enableWebViewDarkTip">開啟該功能可能會影響網頁內容的顯示</string>
+    <string name="networkDisableTip">你的設備尚未聯網</string>
 </resources>
