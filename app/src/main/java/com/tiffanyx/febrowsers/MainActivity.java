@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -68,6 +69,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.tiffanyx.febrowsers.beans.Bookmark;
 import com.tiffanyx.febrowsers.receiver.DownloadCompleteReceiver;
+import com.tiffanyx.febrowsers.util.ClipboardUtil;
 import com.tiffanyx.febrowsers.util.Constant;
 import com.tiffanyx.febrowsers.util.HtmlUtil;
 import com.tiffanyx.febrowsers.util.NetworkStatusUtil;
@@ -139,8 +141,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String nightCode;//黑夜css
     private boolean isNightMode = false;
     private PopupMenu popupMenu = null;
-    private boolean isRequestOrientation = false;//用于防止更改屏幕水平模式时重新创建界面
     private boolean isEnableWebViewDarkMode = false;
+    private int screenOrientation = 0;//记录当前横竖屏情况
+    private String tempHtml = null;
 
     private void downloadBySystem(String url, String contentDisposition, String mimeType) {
         // 指定下载地址
@@ -176,6 +179,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void forward() {
         if (webView.canGoForward()) {
+            if (tempHtml != null) {
+                tempHtml = null;
+            }
             webView.goForward();
         } else {
             Toast.makeText(MainActivity.this, R.string.cannotForward, Toast.LENGTH_SHORT).show();
@@ -188,6 +194,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void goBack() {//返回上一页方法
         if (webView.canGoBack()) {
+            if (tempHtml != null) {
+                tempHtml = null;
+            }
             if (isBlockScheme) {
                 webView.goBackOrForward(-2);
                 isBlockScheme = false;
@@ -200,6 +209,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void goHome() {
+        if (tempHtml != null) {
+            tempHtml = null;
+        }
         webView.loadUrl(homePage);
     }
 
@@ -408,7 +420,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 作为三方浏览器打开传过来的值
-     * return:返回用于判断是否要打开主页
+     *
+     * @return:返回用于判断是否要打开主页
      */
     private boolean getDataFromBrowser(Intent intent) {
         Uri data = intent.getData();
@@ -452,7 +465,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @SuppressLint("SourceLockedOrientationActivity")
     private void fullScreen() {
         isFullScreen = true;
-        isRequestOrientation = true;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设置全屏
@@ -694,7 +706,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @SuppressLint("SourceLockedOrientationActivity")
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
-                isRequestOrientation = true;
                 videoView = view;
                 fVideoLayout.setVisibility(View.VISIBLE);
                 fVideoLayout.addView(videoView);
@@ -759,7 +770,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressLint("SourceLockedOrientationActivity")
     private void hideVideoView() {
-        isRequestOrientation = true;
         //退出全屏
         if (videoView == null) {
             return;
@@ -769,6 +779,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fVideoLayout.setVisibility(View.GONE);
         head.setVisibility(View.VISIBLE);
         bottom.setVisibility(View.VISIBLE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);//释放播放视频强制横屏
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);//清除全屏
         videoView = null;
@@ -814,19 +825,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         registerReceiver(receiver, intentFilter);
     }
 
-    private void load() {
+    private void load(Bundle status) {
         if (getDataFromBrowser(getIntent())) {
             String action = getIntent().getAction();
             assert action != null;
             switch (action) {
                 case OPEN_HOME_PAGE:
-                    webView.loadUrl("https://www.baidu.com");
+                    webView.loadUrl(homePage);
                     break;
                 case SCAN_QR_CODE:
                     scanQRCode();
                     break;
                 default:
-                    webView.loadUrl(homePage);
+                    if (status == null) {
+                        webView.loadUrl(homePage);
+                    } else {
+                        String u = status.getString("url");
+                        assert u != null;
+                        if (u.equals("about:blank")) {
+                            if (status.getString("webInfo") != null) {
+                                webView.loadDataWithBaseURL(null, status.getString("webInfo"), "text/html", "utf-8", null);
+                            }
+                        } else {
+                            webView.loadUrl(u);
+                        }
+                    }
                     break;
             }
         }
@@ -835,11 +858,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        if (isRequestOrientation) {
-            isRequestOrientation = false;
+        if (screenOrientation != newConfig.orientation) {//防止全屏播放视频时重新绘制界面
+            screenOrientation = newConfig.orientation;
             return;
         }
+        int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         switch (currentNightMode) {
             case Configuration.UI_MODE_NIGHT_NO:
                 // Night mode is not active, we're using the light theme
@@ -870,7 +893,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initDayNightMode();
-        getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary, null));
+        screenOrientation = getResources().getConfiguration().orientation;
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimaryBottomNav, null));
         if (WebViewCompat.getCurrentWebViewPackage(this) == null) {
             Toast.makeText(this, R.string.deviceNotWebview, Toast.LENGTH_LONG).show();
             finish();
@@ -883,7 +907,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         defaultUserAgent = webView.getSettings().getUserAgentString();//取得原始用户代理，用于复原代理
         initReceiver();
         checkNetwork();
-        load();
+        load(savedInstanceState);
     }
 
     private void checkNetwork() {
@@ -916,6 +940,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         } catch (Exception ignored) {
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("url", webView.getUrl());
+        if (tempHtml != null) {
+            outState.putString("webInfo", tempHtml);
+            tempHtml = null;
         }
     }
 
@@ -983,7 +1017,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     builder.setTitle(R.string.QRCodeInfo);
                     builder.setMessage(R.string.QRCodeInfoTip);
                     builder.setPositiveButton(R.string.submit, (dialog, which) -> {
-                        String html = "<html><head><title>" + getString(R.string.QRCodeResult) + "</title></head><h3>" + getString(R.string.QRCodeResult) + "</h3>" + result + "</html>";
+                        String html = "<html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no\"><title>" + getString(R.string.QRCodeResult) + "</title></head><h3>" + getString(R.string.QRCodeResult) + "</h3>" + result + "<br/><br/><button onclick=\"local_obj.copy2Clipboard('" + result + "')\">" + getString(R.string.wCopy) + "</button></html>";
+                        tempHtml = html;
                         webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
                     });
                     builder.setNegativeButton(R.string.cancel, null);
@@ -1119,6 +1154,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public final class InJavaScriptLocalObj {
         Document doc;
+
+
+        @JavascriptInterface
+        public void copy2Clipboard(String msg) {
+            ClipboardManager manager = ClipboardUtil.getClipboardManager(getApplicationContext());
+            if (ClipboardUtil.setClipboard(manager, msg)) {
+                Toast.makeText(getApplicationContext(), "复制成功", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "复制失败", Toast.LENGTH_SHORT).show();
+            }
+        }
 
         @JavascriptInterface
         public void fullscreen() {
